@@ -1,0 +1,13 @@
+name: type checking
+on: [push]
+jobs:
+  tsc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
+          cache: yarn
+      - run: yarn
+      - run: yarn tsc --noEmit --project tsconfig.json

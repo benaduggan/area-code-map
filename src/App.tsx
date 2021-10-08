@@ -1,7 +1,7 @@
 import * as React from "react";
 import styled from "styled-components";
 import { BrowserRouter, Switch, Route } from "react-router-dom";
-import { Dashboard } from "src/pages/Dashboard";
+import { Dashboard } from "./pages/Dashboard";
 
 export const BaseApp = styled.div`
   min-height: 100%;

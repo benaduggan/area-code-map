@@ -1,8 +1,8 @@
-import { ReactNode, useState } from "react";
+import { useState } from "react";
 import styled from "styled-components";
 import { SearchArea } from "../../components/SearchArea/SearchArea";
 
-import { areaCodeList, areaCodeMap } from "../../modules/DataMunge/DataMunge";
+import { areaCodeList } from "../../modules/DataMunge/DataMunge";
 
 const Main = styled.div`
   height: 100vh;
@@ -35,8 +35,6 @@ const ResultsList = styled.div`
 export const Dashboard = () => {
   const [query, setQuery] = useState("");
 
-  console.log(areaCodeMap["704"]);
-
   return (
     <Main>
       <LeftSide>
@@ -46,7 +44,8 @@ export const Dashboard = () => {
           {areaCodeList
             .filter(({ NPA }) => NPA.includes(query))
             .map((areaCode, idx) => (
-              <p key={idx} onClick={() => console.log(areaCode)}>
+              // <p key={idx} onClick={() => console.log(areaCode)}>
+              <p key={idx}>
                 {areaCode.NPA} - {areaCode.STATE} - {areaCode.COUNTRY}
               </p>
             ))}

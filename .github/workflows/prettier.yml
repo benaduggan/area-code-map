@@ -1,0 +1,10 @@
+name: Check for conformance with Prettier
+
+on: [push]
+
+jobs:
+  prettier:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: npx prettier --check . --ignore-path .prettier-ignore

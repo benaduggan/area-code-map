@@ -10,7 +10,7 @@ export const SearchArea = ({
   setQuery,
 }: {
   query: string;
-  setQuery: (event: any) => void;
+  setQuery: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }) => {
   return (
     <StyledInput
