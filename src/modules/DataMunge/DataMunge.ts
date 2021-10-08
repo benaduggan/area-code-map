@@ -11,7 +11,7 @@ type AreaCodeInfo = {
   COUNTRY?: string;
 };
 
-let areaCodeMap: Record<string, AreaCodeInfo> = {};
+const areaCodeMap: Record<string, AreaCodeInfo> = {};
 areaCodeList.forEach((obj) => {
   areaCodeMap[obj["NPA"]] = obj;
 });
