@@ -5,5 +5,6 @@ let
 in [
     (yarn.override { inherit nodejs; })
   nodejs
+  nodePackages.prettier
   watchexec
 ]
