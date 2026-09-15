@@ -116,6 +116,12 @@
   margin-left: -0.25rem;
 }
 
+/* Children must not shrink, or the results panel collapses to the column
+   height and overflows past the Top button instead of scrolling. */
+.sidebar > * {
+  flex-shrink: 0;
+}
+
 .sidebar > .search {
   position: sticky;
   top: 0;
