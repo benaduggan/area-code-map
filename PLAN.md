@@ -1,5 +1,9 @@
 # Area Code Map — Project Plan (v2 re-imagining)
 
+> **Status (Sept 2026):** Phases 0–5 are implemented on this branch. What
+> remains is polish and the optional nice-to-haves listed under Phase 5, plus
+> filling out `data/source/cities.json`.
+
 ## The idea, in one line
 
 Drop in your contacts and watch North America light up with the area codes of the

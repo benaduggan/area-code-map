@@ -5,3 +5,4 @@ bun.lock
 data/source
 data/build
 src/data/*.json
+dev-dist

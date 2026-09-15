@@ -17,3 +17,5 @@ jobs:
       - run: bun run format:check
       - run: bun run test
       - run: bun run build
+      - run: bunx playwright@1.63.0 install --with-deps chromium
+      - run: bun run e2e
