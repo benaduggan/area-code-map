@@ -116,10 +116,11 @@ await viewer.goto(shareUrl, { waitUntil: "networkidle" });
 await viewer.waitForSelector("text=shared map");
 await viewer.close();
 
-// PNG export triggers a download (the share dialog is still open).
+// PNG export triggers a download; use the button outside the dialog.
+await page.keyboard.press("Escape");
 const [download] = await Promise.all([
   page.waitForEvent("download", { timeout: 15000 }),
-  page.click("text=Download image"),
+  page.click(".share > button:has-text('Download image')"),
 ]);
 if (download.suggestedFilename() !== "area-code-map.png")
   fail(`unexpected download name ${download.suggestedFilename()}`);

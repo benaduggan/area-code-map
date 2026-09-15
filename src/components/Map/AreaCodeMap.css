@@ -46,7 +46,7 @@
 }
 
 .shape.is-selected {
-  stroke: var(--accent);
+  stroke: var(--fg);
   stroke-width: 2;
 }
 

@@ -1,21 +1,22 @@
 /**
  * Compare mode: your counts against a shared map. Three fixed categorical
- * colors (palette slots 1, 2 and 7), validated for both surfaces.
+ * colors: brand amber for you, blue for them, green for both. Validated for
+ * CVD separation and contrast on both surfaces; "both" is also hatched.
  */
 import { countsByShape } from "./coverage";
 
 export type CompareClass = "mine" | "theirs" | "both";
 
 export const COMPARE_LIGHT: Record<CompareClass, string> = {
-  mine: "#2a78d6",
-  theirs: "#eb6834",
-  both: "#4a3aa7",
+  mine: "#d97706",
+  theirs: "#2a78d6",
+  both: "#008300",
 };
 
 export const COMPARE_DARK: Record<CompareClass, string> = {
-  mine: "#3987e5",
-  theirs: "#d95926",
-  both: "#9085e9",
+  mine: "#c2660a",
+  theirs: "#3987e5",
+  both: "#199e70",
 };
 
 export const COMPARE_LABELS: Record<CompareClass, string> = {

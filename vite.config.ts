@@ -51,7 +51,7 @@ export default defineConfig({
         short_name: "Area Codes",
         description:
           "See where the people you know are from. A map of the area codes in your contacts, built entirely in your browser.",
-        theme_color: "#0f6fff",
+        theme_color: "#d97706",
         background_color: "#fafaf7",
         display: "standalone",
         start_url: base,
