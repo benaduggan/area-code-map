@@ -50,6 +50,42 @@
   stroke-width: 2;
 }
 
+/* Insets sit in a bar pinned to the bottom of the map area, sized from its
+   height, so they stay put whatever shape the column has. */
+.insets {
+  position: absolute;
+  left: 0.5rem;
+  right: 0.5rem;
+  bottom: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  height: clamp(84px, 27%, 210px);
+  pointer-events: none;
+}
+
+.insets-left,
+.insets-stack {
+  display: flex;
+  gap: 0.4rem;
+  height: 100%;
+}
+
+.insets-stack {
+  flex-direction: column;
+}
+
+.insets svg {
+  display: block;
+  height: 100%;
+  width: auto;
+  pointer-events: auto;
+}
+
+.insets-stack svg {
+  height: calc(50% - 0.2rem);
+}
+
 .inset-frame {
   fill: var(--map-bg);
   stroke: var(--border);

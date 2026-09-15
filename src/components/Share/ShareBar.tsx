@@ -8,10 +8,10 @@ interface Props {
   caption: string;
   cards: { value: number; label: string }[];
   legend: { color: string; label: string }[];
-  getSvg: () => SVGSVGElement | null;
+  getExportRoot: () => HTMLElement | null;
 }
 
-export function ShareBar({ counts, caption, cards, legend, getSvg }: Props) {
+export function ShareBar({ counts, caption, cards, legend, getExportRoot }: Props) {
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -40,13 +40,13 @@ export function ShareBar({ counts, caption, cards, legend, getSvg }: Props) {
   };
 
   const downloadPng = async () => {
-    const svg = getSvg();
-    if (!svg) return;
+    const root = getExportRoot();
+    if (!root) return;
     setBusy(true);
     try {
       const cs = getComputedStyle(document.documentElement);
       const v = (name: string, fallback: string) => cs.getPropertyValue(name).trim() || fallback;
-      const blob = await mapToPngBlob(svg, {
+      const blob = await mapToPngBlob(root, {
         title: "Area Code Map",
         caption,
         cards,

@@ -11,7 +11,15 @@ import {
 import { select } from "d3-selection";
 import { zoom, zoomIdentity, type ZoomBehavior, type ZoomTransform } from "d3-zoom";
 import "d3-transition";
-import { INSETS, SHAPES, VIEW_HEIGHT, VIEW_WIDTH, unionBounds } from "../../lib/geo/model";
+import {
+  INSETS,
+  SHAPES,
+  VIEW_HEIGHT,
+  VIEW_WIDTH,
+  unionBounds,
+  type Inset,
+  type ShapeGeometry,
+} from "../../lib/geo/model";
 import "./AreaCodeMap.css";
 
 export interface AreaCodeMapProps {
@@ -30,7 +38,8 @@ export interface AreaCodeMapProps {
 export interface AreaCodeMapHandle {
   zoomToShapes: (shapeIds: readonly string[]) => void;
   resetZoom: () => void;
-  getSvg: () => SVGSVGElement | null;
+  /** The element holding the main map and the inset SVGs, for image export. */
+  getExportRoot: () => HTMLElement | null;
 }
 
 const MIN_ZOOM = 1;
@@ -66,9 +75,6 @@ export const AreaCodeMap = forwardRef<AreaCodeMapHandle, AreaCodeMapProps>(funct
         [VIEW_WIDTH * 1.5, VIEW_HEIGHT * 1.5],
       ])
       .filter((event: Event) => {
-        // Let insets stay fixed: ignore gestures that start on them.
-        const target = event.target as Element | null;
-        if (target?.closest(".inset")) return false;
         // d3's default filter: no right-click, ctrl+wheel allowed.
         const me = event as MouseEvent;
         return (!me.ctrlKey || event.type === "wheel") && !me.button;
@@ -105,6 +111,12 @@ export const AreaCodeMap = forwardRef<AreaCodeMapHandle, AreaCodeMapProps>(funct
     select(svg).transition().duration(500).call(z.transform, t);
   }, []);
 
+  const resetZoom = useCallback(() => {
+    const svg = svgRef.current;
+    const z = zoomRef.current;
+    if (svg && z) select(svg).transition().duration(400).call(z.transform, zoomIdentity);
+  }, []);
+
   useImperativeHandle(
     ref,
     () => ({
@@ -112,14 +124,10 @@ export const AreaCodeMap = forwardRef<AreaCodeMapHandle, AreaCodeMapProps>(funct
         const b = unionBounds(ids);
         if (b) zoomToBounds(b);
       },
-      resetZoom: () => {
-        const svg = svgRef.current;
-        const z = zoomRef.current;
-        if (svg && z) select(svg).transition().duration(400).call(z.transform, zoomIdentity);
-      },
-      getSvg: () => svgRef.current,
+      resetZoom,
+      getExportRoot: () => containerRef.current,
     }),
-    [zoomToBounds],
+    [zoomToBounds, resetZoom],
   );
 
   const handleEnter = (id: string) => {
@@ -142,7 +150,7 @@ export const AreaCodeMap = forwardRef<AreaCodeMapHandle, AreaCodeMapProps>(funct
   };
 
   const byInset = useMemo(() => {
-    const m = new Map<string, typeof SHAPES>();
+    const m = new Map<string, ShapeGeometry[]>();
     for (const inset of INSETS)
       m.set(
         inset.id,
@@ -206,6 +214,37 @@ export const AreaCodeMap = forwardRef<AreaCodeMapHandle, AreaCodeMapProps>(funct
     if (svg && z) select(svg).transition().duration(250).call(z.scaleBy, factor);
   };
 
+  // Each inset is its own SVG cropped to its frame, so CSS can pin them to the
+  // bottom of the map area whatever the container's shape.
+  const renderInset = (inset: Inset) => (
+    <svg
+      key={inset.id}
+      className={`inset inset-${inset.id}`}
+      viewBox={`${inset.frame.x} ${inset.frame.y} ${inset.frame.width} ${inset.frame.height}`}
+      role="img"
+      aria-label={inset.label}
+      data-inset={inset.id}
+    >
+      <rect
+        className="inset-frame"
+        x={inset.frame.x}
+        y={inset.frame.y}
+        width={inset.frame.width}
+        height={inset.frame.height}
+        rx={4}
+      />
+      <text
+        className="inset-label"
+        x={inset.frame.x + 6}
+        y={inset.frame.y + inset.frame.height - 5}
+      >
+        {inset.label}
+      </text>
+      {renderShapes(inset.id)}
+    </svg>
+  );
+  const inset = (id: string) => INSETS.find((i) => i.id === id)!;
+
   return (
     <div className="map-container" ref={containerRef} onPointerMove={handleMove}>
       <svg
@@ -232,27 +271,19 @@ export const AreaCodeMap = forwardRef<AreaCodeMapHandle, AreaCodeMapProps>(funct
         <g className="main" transform={transform.toString()}>
           {renderShapes("main", transform.k)}
         </g>
-        {INSETS.filter((i) => i.id !== "main").map((inset) => (
-          <g key={inset.id} className="inset">
-            <rect
-              className="inset-frame"
-              x={inset.frame.x}
-              y={inset.frame.y}
-              width={inset.frame.width}
-              height={inset.frame.height}
-              rx={4}
-            />
-            <text
-              className="inset-label"
-              x={inset.frame.x + 6}
-              y={inset.frame.y + inset.frame.height - 5}
-            >
-              {inset.label}
-            </text>
-            {renderShapes(inset.id)}
-          </g>
-        ))}
       </svg>
+
+      <div className="insets">
+        <div className="insets-left">
+          {renderInset(inset("alaska"))}
+          <div className="insets-stack">
+            {renderInset(inset("pacific"))}
+            {renderInset(inset("hawaii"))}
+          </div>
+        </div>
+        {renderInset(inset("caribbean"))}
+      </div>
+
       <div className="map-controls">
         <button
           type="button"
@@ -280,11 +311,7 @@ export const AreaCodeMap = forwardRef<AreaCodeMapHandle, AreaCodeMapProps>(funct
             className="map-control map-reset"
             aria-label="Reset view"
             title="Reset view"
-            onClick={() => {
-              const svg = svgRef.current;
-              const z = zoomRef.current;
-              if (svg && z) select(svg).transition().duration(400).call(z.transform, zoomIdentity);
-            }}
+            onClick={resetZoom}
           >
             ⟲
           </button>
