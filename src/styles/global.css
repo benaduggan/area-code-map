@@ -2,19 +2,22 @@
   color-scheme: light dark;
   --bg: #fafaf7;
   --fg: #1c1c1a;
-  --muted: #6b6b66;
-  /* Brand amber. --accent-text is a darker step that clears 4.5:1 for small text on light. */
+  /* 6.6:1 on --bg, 6.1:1 on --bg-elevated: small muted text stays readable. */
+  --muted: #595954;
+  /* Brand amber. --accent-text is a darker step: 5.9:1 on --bg for links. */
   --accent: #d97706;
-  --accent-text: #b45309;
+  --accent-text: #9a4606;
   --on-accent: #1c1c1a;
   --border: #e2e2dc;
+  /* Form-field edges need to be visible on their own: 3:1 against --bg. */
+  --border-strong: #8d8d83;
   --bg-elevated: #f1f1ec;
   --map-bg: #f0efeb;
   --map-fill: #dcdad3;
   --map-stroke: #ffffff;
   --map-hover: #c7c3b8;
   --map-highlight: #0ea5e9;
-  --home-theirs: #2a78d6;
+  --home-theirs: #1e63b8;
   --danger: #b42318;
   --ok: #1a7f37;
   font-family:
@@ -38,6 +41,7 @@
     --accent-text: #f59e0b;
     --on-accent: #0d1117;
     --border: #30363d;
+    --border-strong: #6e7681;
     --bg-elevated: #161b22;
     --map-bg: #161b22;
     --map-fill: #2a313a;
@@ -58,6 +62,7 @@
   --accent-text: #f59e0b;
   --on-accent: #0d1117;
   --border: #30363d;
+  --border-strong: #6e7681;
   --bg-elevated: #161b22;
   --map-bg: #161b22;
   --map-fill: #2a313a;
@@ -89,4 +94,10 @@ body,
 body {
   background: var(--bg);
   color: var(--fg);
+}
+
+/* Placeholders default to about half opacity, which falls under 3:1 on light. */
+::placeholder {
+  color: var(--muted);
+  opacity: 1;
 }

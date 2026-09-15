@@ -19,7 +19,7 @@
   font-size: 0.85rem;
   color: var(--fg);
   background: var(--bg-elevated);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-strong);
   border-radius: 0.5rem;
 }
 

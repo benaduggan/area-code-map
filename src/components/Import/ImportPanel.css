@@ -25,7 +25,9 @@
 }
 
 .btn:disabled {
-  opacity: 0.5;
+  color: var(--muted);
+  background: var(--bg-elevated);
+  border-color: var(--border);
   cursor: default;
 }
 
@@ -56,7 +58,7 @@
   font-size: 0.9rem;
   color: var(--fg);
   background: var(--bg-elevated);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-strong);
   border-radius: 0.6rem;
   resize: vertical;
 }

@@ -8,7 +8,11 @@ afterEach(() => {
 });
 
 function skipWelcome() {
-  fireEvent.click(screen.getByRole("button", { name: /skip and view the map/i }));
+  fireEvent.click(screen.getByRole("button", { name: /just show me the map/i }));
+}
+
+function getStarted() {
+  fireEvent.click(screen.getByRole("button", { name: /get started/i }));
 }
 
 function pasteNumbers(text: string) {
@@ -18,11 +22,16 @@ function pasteNumbers(text: string) {
 }
 
 describe("App", () => {
-  it("opens on the welcome screen and skips to the map", () => {
+  it("opens on the intro, then setup, then the map", () => {
     render(<App />);
     expect(screen.getByRole("heading", { name: "Hometowns" })).toBeInTheDocument();
     expect(screen.getByText("Where your people started.")).toBeInTheDocument();
     expect(screen.queryByRole("img", { name: /map of north american area codes/i })).toBeNull();
+    expect(screen.queryByLabelText(/your own area code/i)).toBeNull();
+    getStarted();
+    expect(screen.getByLabelText(/your own area code/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Back" }));
+    expect(screen.getByText("Where your people started.")).toBeInTheDocument();
     skipWelcome();
     expect(
       screen.getByRole("img", { name: /map of north american area codes/i }),
@@ -33,6 +42,7 @@ describe("App", () => {
 
   it("marks a home area code from the welcome screen", () => {
     render(<App />);
+    getStarted();
     const field = screen.getByLabelText(/your own area code/i);
     fireEvent.change(field, { target: { value: "91x9" } });
     expect(screen.getByText("Raleigh, North Carolina")).toBeInTheDocument();
@@ -45,6 +55,7 @@ describe("App", () => {
 
   it("accepts an unknown home code without mapping it", () => {
     render(<App />);
+    getStarted();
     fireEvent.change(screen.getByLabelText(/your own area code/i), { target: { value: "000" } });
     expect(screen.getByText(/don’t know that one yet/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /continue to the map/i }));
@@ -54,6 +65,7 @@ describe("App", () => {
 
   it("remembers the home code only when asked, and forgets it", () => {
     const { unmount } = render(<App />);
+    getStarted();
     fireEvent.change(screen.getByLabelText(/your own area code/i), { target: { value: "312" } });
     fireEvent.click(screen.getByLabelText(/remember this on this device/i));
     expect(localStorage.getItem("area-code-map:home")).toBe("312");

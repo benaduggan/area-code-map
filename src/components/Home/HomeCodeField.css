@@ -27,14 +27,13 @@
   text-align: center;
   color: var(--fg);
   background: var(--bg-elevated);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-strong);
   border-radius: 0.6rem;
 }
 
 .home-input::placeholder {
-  color: var(--muted);
-  opacity: 0.5;
   font-weight: 500;
+  letter-spacing: 0.12em;
 }
 
 .home-input:focus-visible {

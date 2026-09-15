@@ -69,6 +69,7 @@ await page.goto(BASE, { waitUntil: "networkidle" });
 
 // The welcome screen: set a home area code, then import via paste.
 await page.waitForSelector("text=Where your people started");
+await page.click("text=Get started");
 await page.fill("input[inputmode=numeric]", "919");
 await page.waitForSelector("text=Raleigh, North Carolina");
 await page.click("text=Paste numbers");

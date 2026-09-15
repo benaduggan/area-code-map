@@ -176,7 +176,7 @@
 }
 
 .map-control:disabled {
-  opacity: 0.4;
+  color: var(--muted);
   cursor: default;
 }
 
