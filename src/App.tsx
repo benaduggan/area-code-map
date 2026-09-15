@@ -218,7 +218,7 @@ export function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <div>
+        <div className="title-block">
           <h1>Area Code Map</h1>
           <p className="tagline">See where the people you know are from.</p>
         </div>
@@ -319,9 +319,9 @@ export function App() {
                 remember={remember}
                 onRememberChange={handleRemember}
                 getSvg={() => mapRef.current?.getSvg() ?? null}
+                addMore={<ImportPanel onImport={handleImport} compact />}
                 comparison={comparison && shared ? { theirs: shared, result: comparison } : null}
               />
-              <ImportPanel onImport={handleImport} compact />
             </div>
           ) : shared && sharedResult ? (
             <div className="panel">

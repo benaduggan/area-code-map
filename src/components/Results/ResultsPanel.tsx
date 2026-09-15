@@ -16,6 +16,8 @@ interface Props {
   remember: boolean;
   onRememberChange: (on: boolean) => void;
   getSvg: () => SVGSVGElement | null;
+  /** Import controls, rendered above the long list so they are easy to find. */
+  addMore?: React.ReactNode;
   /** Present when comparing against a shared map. */
   comparison?: { theirs: ReadonlyMap<string, number>; result: Comparison } | null;
 }
@@ -28,6 +30,7 @@ export function ResultsPanel({
   remember,
   onRememberChange,
   getSvg,
+  addMore,
   comparison,
 }: Props) {
   const stats = useMemo(() => computeStats(result), [result]);
@@ -89,17 +92,19 @@ export function ResultsPanel({
         )}
         {skippedCount > 0 && (
           <li className="muted">
-            Not mapped: {summary.foreign > 0 && `${summary.foreign} outside North America`}
-            {summary.foreign > 0 && summary.unrecognised > 0 && ", "}
-            {summary.unrecognised > 0 && `${summary.unrecognised} unrecognised`}
-            {result.skipped.foreign.length + result.skipped.unrecognised.length > 0 && (
-              <>
-                {" · "}
-                <button type="button" className="link" onClick={() => setSkippedOpen(true)}>
-                  see which
-                </button>
-              </>
-            )}
+            <a
+              href="#not-mapped"
+              className="link link-muted"
+              onClick={(e) => {
+                e.preventDefault();
+                setSkippedOpen(true);
+              }}
+              title="See which numbers could not be placed"
+            >
+              Not mapped: {summary.foreign > 0 && `${summary.foreign} outside North America`}
+              {summary.foreign > 0 && summary.unrecognised > 0 && ", "}
+              {summary.unrecognised > 0 && `${summary.unrecognised} unrecognised`} ›
+            </a>
           </li>
         )}
       </ul>
@@ -129,23 +134,17 @@ export function ResultsPanel({
         skipped={result.skipped}
       />
 
-      <label
-        className="remember"
-        title="Saved in this browser's local storage on this device only. Local storage is never sent to a server or synced anywhere."
-      >
+      <label className="remember">
         <input
           type="checkbox"
           checked={remember}
           onChange={(e) => onRememberChange(e.target.checked)}
         />
-        <span>
-          Remember this map on this device
-          <span className="remember-hint">
-            Saved in this browser&rsquo;s local storage, which never leaves your device. Use
-            &ldquo;Forget everything&rdquo; to erase it.
-          </span>
-        </span>
+        <span>Remember this map on this device</span>
+        <InfoTip text="Saved in this browser's local storage, which never leaves your device and is not synced anywhere. Use “Forget everything” to erase it." />
       </label>
+
+      {addMore}
 
       <h3 className="panel-title">By area code</h3>
       <div className="card-list">
@@ -174,6 +173,15 @@ function placeOf(a: AreaCode): string {
   const city = displayCities(a)[0];
   if (a.regionName === a.country) return a.regionName; // Caribbean
   return city ? `${city}, ${a.regionName}` : a.regionName;
+}
+
+/** A small ⓘ with a hover/focus tooltip; the text is also read by screen readers. */
+function InfoTip({ text }: { text: string }) {
+  return (
+    <span className="info-tip" tabIndex={0} role="note" aria-label={text} data-tip={text}>
+      i
+    </span>
+  );
 }
 
 function Stat({ value, label }: { value: number; label: string }) {

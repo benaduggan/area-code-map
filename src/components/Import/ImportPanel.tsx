@@ -83,7 +83,7 @@ export function ImportPanel({ onImport, compact = false }: Props) {
 
   return (
     <section className="import">
-      <h2 className="panel-title">{compact ? "Add more" : "Light up your map"}</h2>
+      <h2 className="panel-title">{compact ? "Add more contacts" : "Light up your map"}</h2>
       {!compact && (
         <p className="import-lead">
           Add the phone numbers in your contacts. They are read right here in your browser and never
