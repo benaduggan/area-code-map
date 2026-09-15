@@ -23,6 +23,11 @@
     "check": "bun run typecheck && bun run lint && bun run format:check && bun run test"
   },
   "dependencies": {
+    "d3-geo": "^3.1.1",
+    "d3-selection": "^3.0.0",
+    "d3-transition": "^3.0.1",
+    "d3-zoom": "^3.0.0",
+    "libphonenumber-js": "^1.13.13",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "topojson-client": "^3.1.0"
@@ -32,6 +37,11 @@
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
     "@types/bun": "^1.4.2",
+    "@types/d3-geo": "^3.1.1",
+    "@types/d3-selection": "^3.0.12",
+    "@types/d3-transition": "^3.0.9",
+    "@types/d3-zoom": "^3.0.8",
+    "@types/geojson": "^7946.0.16",
     "@types/node": "^26.5.1",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
@@ -46,6 +56,7 @@
     "globals": "^17.12.0",
     "jsdom": "^30.0.1",
     "mapshaper": "^0.7.61",
+    "playwright-core": "^1.63.0",
     "prettier": "^3.9.6",
     "typescript": "^6.0.0",
     "typescript-eslint": "^8.70.0",

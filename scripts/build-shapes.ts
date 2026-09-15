@@ -56,35 +56,59 @@ const features = source.features.map((f) => ({
 }));
 features.push({ ...SINT_MAARTEN, properties: { id: "721" } });
 
-const ids = features.map((f) => f.properties.id);
-const dupes = ids.filter((id, i) => ids.indexOf(id) !== i);
-if (dupes.length) {
-  // The 2010 file has one NPA drawn twice (a MultiPolygon split into two rows).
-  // mapshaper merges those below via -dissolve.
-  console.log(`Merging duplicated shape ids: ${[...new Set(dupes)].join(", ")}`);
+// The 2010 file draws one NPA (270) as two rows: a Polygon and a MultiPolygon.
+// Merge duplicates into one MultiPolygon here. We deliberately do NOT use
+// mapshaper's -dissolve or -clean: overlay codes are drawn as exact copies of
+// their parent polygon, and both of those commands treat coincident polygons
+// as one shape and drop the rest.
+const byId = new Map<string, Feature>();
+for (const f of features) {
+  const existing = byId.get(f.properties.id);
+  if (!existing) {
+    byId.set(f.properties.id, f);
+    continue;
+  }
+  console.log(`Merging duplicated shape id: ${f.properties.id}`);
+  existing.geometry = {
+    type: "MultiPolygon",
+    coordinates: [...polygons(existing.geometry), ...polygons(f.geometry)],
+  };
+}
+const merged = [...byId.values()];
+const ids = merged.map((f) => String(f.properties.id));
+
+function polygons(geometry: unknown): unknown[] {
+  const g = geometry as { type: string; coordinates: unknown[] };
+  if (g.type === "Polygon") return [g.coordinates];
+  if (g.type === "MultiPolygon") return g.coordinates;
+  throw new Error(`Unexpected geometry type ${g.type}`);
 }
 
 const commands = [
   "-i in.geojson",
-  `-dissolve id`,
   `-simplify ${SIMPLIFY} keep-shapes`,
   "-o out.topojson format=topojson quantization=1e5 id-field=id",
 ].join(" ");
 
 const outputs = await mapshaper.applyCommands(commands, {
-  "in.geojson": { type: "FeatureCollection", features },
+  "in.geojson": { type: "FeatureCollection", features: merged },
 });
 const topo = outputs["out.topojson"];
 if (!topo) throw new Error("mapshaper produced no output");
 const text = typeof topo === "string" ? topo : topo.toString();
 
 // Sanity-check: every input id survives.
-const parsed = JSON.parse(text) as { objects: Record<string, { geometries: { id?: string }[] }> };
+const parsed = JSON.parse(text) as {
+  objects: Record<string, { geometries: { id?: string; type?: string; arcs?: unknown[] }[] }>;
+};
 const objectName = Object.keys(parsed.objects)[0];
 if (!objectName) throw new Error("TopoJSON has no objects");
-const outIds = new Set(parsed.objects[objectName]!.geometries.map((g) => g.id));
-const lost = [...new Set(ids)].filter((id) => !outIds.has(id));
+const geometries = parsed.objects[objectName]!.geometries;
+const outIds = new Set(geometries.map((g) => g.id));
+const lost = ids.filter((id) => !outIds.has(id));
 if (lost.length) throw new Error(`Shapes lost during build: ${lost.join(", ")}`);
+const empty = geometries.filter((g) => !g.type || !g.arcs || g.arcs.length === 0).map((g) => g.id);
+if (empty.length) throw new Error(`Shapes with empty geometry: ${empty.join(", ")}`);
 
 // Rename the object to something stable regardless of input filename.
 if (objectName !== "shapes") {
