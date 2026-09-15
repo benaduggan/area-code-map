@@ -75,8 +75,7 @@ export const en = {
 
   // Welcome, screen one
   "welcome.tagline": "The story of your contacts",
-  "welcome.lead":
-    "Their area code tells a story",
+  "welcome.lead": "Their area code tells a story",
   "welcome.body":
     "Most people keep their first phone number. The area code you get as a teenager can follow you through every life transition, usually telling the story of where you are from, not where you live now. So if we can project your contacts on a map you can get an interesting picture of where folks may have started out.",
   "welcome.privacy":
@@ -90,7 +89,6 @@ export const en = {
   "welcome.homeLabel": "What’s your phone number's area code?",
   "welcome.remember": "Remember this on this device",
   "welcome.step2": "Then add your contacts",
-  "welcome.step2Note": "They are read right here in your browser and never uploaded.",
   "welcome.continue": "Continue to the map",
   "welcome.skipToMap": "Skip and view the map",
 
@@ -111,19 +109,19 @@ export const en = {
     "No phone numbers found in that. Try a different file or paste some numbers.",
   "import.error.file": "Could not read that file.",
   "import.error.contacts": "Could not open your contacts.",
-  "import.help.summary": "How do I export my contacts?",
+  "import.help.summary": "How do I get my contacts?",
   "import.help.iphone.label": "iPhone / iCloud:",
   "import.help.iphone.text": "Contacts → select all → Export vCard.",
   "import.help.iphone.link": "Open iCloud Contacts ↗",
   "import.help.google.label": "Google:",
-  "import.help.google.text": "Export → Google CSV or vCard.",
+  "import.help.google.text": "Select contacts → three-dot menu -> Export Google CSV or vCard.",
   "import.help.google.link": "Open Google Contacts ↗",
   "import.help.outlook.label": "Outlook:",
   "import.help.outlook.text": "People → Manage → Export contacts.",
   "import.help.outlook.link": "Open Outlook People ↗",
   "import.help.android.label": "Android:",
   "import.help.android.text":
-    "Contacts app → Fix & manage → Export to file (.vcf), then upload it here.",
+    "Contacts app → Organize → Export to file, then upload it here.",
 
   // Results
   "results.title": "Your map",
@@ -232,7 +230,7 @@ export const en = {
   "privacy.contacts.share":
     "A share link contains only a count per area code, and your own area code if you choose to include it, packed into the part of the URL after the {hash}, which browsers never send to servers.",
   "privacy.contacts.remember":
-    "“Remember on this device” writes your per-area-code counts and your own area code to your browser’s local storage only. It never syncs anywhere. “Forget everything” erases it.",
+    "“Remember on this device” writes your per-area-code counts and your own area code to your browser’s local storage only.",
   "privacy.check.heading": "See for yourself: cut the network",
   "privacy.check.lead":
     "No web page can switch itself offline, but you can. Do one of these, then import your contacts. Everything keeps working.",

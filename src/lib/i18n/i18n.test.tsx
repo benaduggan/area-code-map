@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { en } from "./en";
+import { es } from "./es";
 import { DICTIONARIES, LOCALES, SOURCE_LOCALE, makeTranslator } from ".";
 import { fingerprint } from "./fingerprint";
 import lock from "./translations.lock.json";
@@ -122,8 +123,8 @@ describe("locale switching", () => {
         />
       </I18nProvider>,
     );
-    expect(screen.getByText("De dónde viene tu gente.")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Empezar" })).toBeInTheDocument();
+    expect(screen.getByText(es["welcome.tagline"])).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: es["welcome.getStarted"] })).toBeInTheDocument();
     expect(document.documentElement.lang).toBe("es");
   });
 });

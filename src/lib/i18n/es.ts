@@ -14,12 +14,12 @@ export const es: Messages = {
   "app.theme.aria": "Tema: {theme}. Cambiar tema",
   "app.net.online": "Funciona sin conexión",
   "app.net.offline": "Sin conexión",
-  "app.net.title": "Cómo tus datos se quedan en tu dispositivo",
+  "app.net.title": "Cómo tus datos se quedan localmente en tu dispositivo",
   "app.sourceCode": "Código fuente",
   "app.language.aria": "Idioma",
   "app.toTop": "↑ Arriba",
   "app.footer.data": "{count} códigos de área · datos de NANPA al {date}",
-  "app.footer.privacy": "Nada de lo que importas sale de tu navegador.",
+  "app.footer.privacy": "Nada sale de tu navegador.",
   "app.footer.madeBy": "Hecho por",
   "app.footer.coffee": "☕ Invítame un café",
 
@@ -61,30 +61,28 @@ export const es: Messages = {
 
   // Home area code
   "home.fieldLabel": "Tu código de área",
-  "home.fieldHint": "Los tres dígitos con los que empieza tu propio número de teléfono.",
+  "home.fieldHint": "Los tres primeros dígitos de tu número de teléfono.",
   "home.unknown": "Todavía no conocemos ese, pero igual lo marcaremos como tuyo.",
   "home.summary": "Casa: {npa}",
   "home.prompt": "Marca tu propio código de área en el mapa",
   "home.addYours": "Agregar el tuyo",
 
   // Welcome, screen one
-  "welcome.tagline": "De dónde viene tu gente.",
-  "welcome.lead":
-    "Cada persona que conoces lleva un pedacito de su historia en su número de teléfono. Agrega tus contactos para verlo.",
+  "welcome.tagline": "La historia de tus contactos",
+  "welcome.lead": "Su código de área cuenta una historia",
   "welcome.body":
-    "Casi nadie cambia de número. El código de área que te tocó de adolescente te sigue en cada mudanza, así que el número de un amigo suele decir de dónde es, no dónde vive ahora. Pon tus contactos en un mapa y verás dónde empezó cada persona que conoces, con los nombres detrás de cada lugar a un clic de distancia. Compártelo y descubre con quién tienes gente en común.",
+    "Casi nadie cambia su primer número de teléfono. El código de área que te toca de adolescente puede seguirte por cada etapa de la vida, y suele contar la historia de dónde eres, no de dónde vives ahora. Así que si proyectamos tus contactos en un mapa, puedes ver un retrato curioso de dónde empezó cada quien.",
   "welcome.privacy":
-    "Tus contactos nunca salen de tu dispositivo. Esta es una página estática sin ningún servidor detrás. Los números se reducen a una cuenta por código de área dentro de tu navegador, y la página le indica al navegador que rechace cualquier otra conexión.",
+    "Tus contactos nunca salen de tu dispositivo. Esta es una página estática sin ningún servidor detrás. Los números se reducen a una cuenta por código de área dentro de tu navegador.",
   "welcome.privacyLink": "Cómo comprobarlo tú mismo",
   "welcome.getStarted": "Empezar",
   "welcome.skip": "Solo muéstrame el mapa",
 
   // Welcome, screen two
-  "welcome.step1": "Empieza por ti",
-  "welcome.homeLabel": "¿Cuál es tu propio código de área?",
+  "welcome.step1": "¿Dónde empezaste tú?",
+  "welcome.homeLabel": "¿Cuál es el código de área de tu número?",
   "welcome.remember": "Recordar esto en este dispositivo",
   "welcome.step2": "Luego agrega tus contactos",
-  "welcome.step2Note": "Se leen aquí mismo, en tu navegador, y nunca se suben a ningún lado.",
   "welcome.continue": "Continuar al mapa",
   "welcome.skipToMap": "Omitir y ver el mapa",
 
@@ -105,12 +103,13 @@ export const es: Messages = {
     "No encontramos números de teléfono ahí. Prueba con otro archivo o pega algunos números.",
   "import.error.file": "No se pudo leer ese archivo.",
   "import.error.contacts": "No se pudieron abrir tus contactos.",
-  "import.help.summary": "¿Cómo exporto mis contactos?",
+  "import.help.summary": "¿Cómo obtengo mis contactos?",
   "import.help.iphone.label": "iPhone / iCloud:",
   "import.help.iphone.text": "Contactos → seleccionar todo → Exportar vCard.",
   "import.help.iphone.link": "Abrir Contactos de iCloud ↗",
   "import.help.google.label": "Google:",
-  "import.help.google.text": "Exportar → CSV de Google o vCard.",
+  "import.help.google.text":
+    "Selecciona los contactos → menú de tres puntos → Exportar CSV de Google o vCard.",
   "import.help.google.link": "Abrir Contactos de Google ↗",
   "import.help.outlook.label": "Outlook:",
   "import.help.outlook.text": "Personas → Administrar → Exportar contactos.",
@@ -230,7 +229,7 @@ export const es: Messages = {
   "privacy.contacts.share":
     "Un enlace para compartir contiene solo una cuenta por código de área, y tu propio código de área si decides incluirlo, comprimidos en la parte de la URL después del {hash}, que los navegadores nunca envían a los servidores.",
   "privacy.contacts.remember":
-    "«Recordar en este dispositivo» guarda tus cuentas por código de área y tu propio código de área únicamente en el almacenamiento local de tu navegador. Nunca se sincroniza con nada. «Olvidar todo» lo borra.",
+    "«Recordar en este dispositivo» guarda tus cuentas por código de área y tu propio código de área únicamente en el almacenamiento local de tu navegador.",
   "privacy.check.heading": "Compruébalo tú mismo: corta la red",
   "privacy.check.lead":
     "Ninguna página web puede desconectarse sola, pero tú sí puedes. Haz una de estas cosas y luego importa tus contactos. Todo sigue funcionando.",

@@ -1,6 +1,7 @@
 import { fireEvent, screen } from "@testing-library/react";
 import { renderWithI18n as render } from "./test/render";
 import { App } from "./App";
+import { en } from "./lib/i18n/en";
 import { encodeCounts, encodeShare } from "./lib/share/codec";
 
 afterEach(() => {
@@ -26,13 +27,13 @@ describe("App", () => {
   it("opens on the intro, then setup, then the map", () => {
     render(<App />);
     expect(screen.getByRole("heading", { name: "Hometowns" })).toBeInTheDocument();
-    expect(screen.getByText("Where your people started.")).toBeInTheDocument();
+    expect(screen.getByText(en["welcome.tagline"])).toBeInTheDocument();
     expect(screen.queryByRole("img", { name: /map of north american area codes/i })).toBeNull();
-    expect(screen.queryByLabelText(/your own area code/i)).toBeNull();
+    expect(screen.queryByLabelText(en["welcome.homeLabel"])).toBeNull();
     getStarted();
-    expect(screen.getByLabelText(/your own area code/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(en["welcome.homeLabel"])).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Back" }));
-    expect(screen.getByText("Where your people started.")).toBeInTheDocument();
+    expect(screen.getByText(en["welcome.tagline"])).toBeInTheDocument();
     skipWelcome();
     expect(
       screen.getByRole("img", { name: /map of north american area codes/i }),
@@ -44,7 +45,7 @@ describe("App", () => {
   it("marks a home area code from the welcome screen", () => {
     render(<App />);
     getStarted();
-    const field = screen.getByLabelText(/your own area code/i);
+    const field = screen.getByLabelText(en["welcome.homeLabel"]);
     fireEvent.change(field, { target: { value: "91x9" } });
     expect(screen.getByText("Raleigh, North Carolina")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /continue to the map/i }));
@@ -57,7 +58,7 @@ describe("App", () => {
   it("accepts an unknown home code without mapping it", () => {
     render(<App />);
     getStarted();
-    fireEvent.change(screen.getByLabelText(/your own area code/i), { target: { value: "000" } });
+    fireEvent.change(screen.getByLabelText(en["welcome.homeLabel"]), { target: { value: "000" } });
     expect(screen.getByText(/don’t know that one yet/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /continue to the map/i }));
     expect(document.querySelector('[data-home="mine"]')).toBeNull();
@@ -67,19 +68,19 @@ describe("App", () => {
   it("remembers the home code only when asked, and forgets it", () => {
     const { unmount } = render(<App />);
     getStarted();
-    fireEvent.change(screen.getByLabelText(/your own area code/i), { target: { value: "312" } });
+    fireEvent.change(screen.getByLabelText(en["welcome.homeLabel"]), { target: { value: "312" } });
     fireEvent.click(screen.getByLabelText(/remember this on this device/i));
     expect(localStorage.getItem("area-code-map:home")).toBe("312");
     unmount();
 
     render(<App />);
     // Straight to the map: something is remembered.
-    expect(screen.queryByText("Where your people started.")).toBeNull();
+    expect(screen.queryByText(en["welcome.tagline"])).toBeNull();
     expect(screen.getByText(/^Home:/)).toHaveTextContent("312");
     pasteNumbers("312-555-0100, 919-555-0100");
     fireEvent.click(screen.getByRole("button", { name: "Forget everything" }));
     expect(localStorage.getItem("area-code-map:home")).toBeNull();
-    expect(screen.getByText("Where your people started.")).toBeInTheDocument();
+    expect(screen.getByText(en["welcome.tagline"])).toBeInTheDocument();
   });
 
   it("searches and lists results", async () => {
@@ -104,7 +105,7 @@ describe("App", () => {
     expect(shape.style.fill).not.toBe("");
     expect((document.querySelector('[data-shape="312"]') as SVGPathElement).style.fill).toBe("");
     fireEvent.click(screen.getByRole("button", { name: "Forget everything" }));
-    expect(screen.getByText("Where your people started.")).toBeInTheDocument();
+    expect(screen.getByText(en["welcome.tagline"])).toBeInTheDocument();
   });
 
   it("frames stats around the home code and offers it in the share link", () => {

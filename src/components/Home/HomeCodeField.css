@@ -81,7 +81,7 @@
   color: var(--muted);
 }
 
-.home-row-summary>span:first-of-type {
+.home-row-summary > span:first-of-type {
   white-space: nowrap;
 }
 

@@ -106,7 +106,6 @@ function Setup({
 
       <section className="welcome-step" aria-labelledby="welcome-import-title">
         <h2 id="welcome-import-title">{t("welcome.step2")}</h2>
-        <p className="welcome-step-note">{t("welcome.step2Note")}</p>
         <ImportPanel onImport={onImport} bare />
       </section>
 
