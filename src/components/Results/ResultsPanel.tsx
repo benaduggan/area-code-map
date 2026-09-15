@@ -112,13 +112,22 @@ export function ResultsPanel({
         getSvg={getSvg}
       />
 
-      <label className="remember">
+      <label
+        className="remember"
+        title="Saved in this browser's local storage on this device only. Local storage is never sent to a server or synced anywhere."
+      >
         <input
           type="checkbox"
           checked={remember}
           onChange={(e) => onRememberChange(e.target.checked)}
         />
-        Remember my counts on this device (never names or numbers)
+        <span>
+          Remember this map on this device
+          <span className="remember-hint">
+            Saved in this browser&rsquo;s local storage, which never leaves your device. Use
+            &ldquo;Forget everything&rdquo; to erase it.
+          </span>
+        </span>
       </label>
 
       <h3 className="panel-title">By area code</h3>

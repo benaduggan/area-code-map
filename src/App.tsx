@@ -18,10 +18,11 @@ import "./components/Share/ShareBar.css";
 import {
   clearStored,
   isRememberEnabled,
-  loadCounts,
-  saveCounts,
+  loadResult,
+  saveResult,
   setRememberEnabled,
 } from "./lib/contacts/store";
+import { PrivacyDialog } from "./components/Privacy/PrivacyDialog";
 import { usePrefersDark } from "./lib/usePrefersDark";
 import { useOnline } from "./lib/useOnline";
 import "./App.css";
@@ -36,8 +37,7 @@ function resultFromCounts(counts: Map<string, number>): ImportResult {
 }
 
 function restoredResult(): ImportResult | null {
-  const counts = loadCounts();
-  return counts ? resultFromCounts(counts) : null;
+  return loadResult();
 }
 
 function sharedFromLocation(): Map<string, number> | null {
@@ -54,6 +54,7 @@ export function App() {
   const [shared, setShared] = useState<Map<string, number> | null>(() => sharedFromLocation());
   const dark = usePrefersDark();
   const online = useOnline();
+  const [privacyOpen, setPrivacyOpen] = useState(false);
 
   useEffect(() => {
     const onHash = () => setShared(sharedFromLocation());
@@ -78,7 +79,7 @@ export function App() {
   );
 
   useEffect(() => {
-    if (result && remember) saveCounts(result);
+    if (result && remember) saveResult(result);
   }, [result, remember]);
 
   const results = useMemo(() => searchAreaCodes(query), [query]);
@@ -198,18 +199,24 @@ export function App() {
           <p className="tagline">See where the people you know are from.</p>
         </div>
         <div className="header-links">
-          <span
-            className={"net-badge" + (online ? "" : " is-offline")}
-            title={
-              online
-                ? "This page never sends your contacts anywhere. Try airplane mode: it keeps working."
-                : "You are offline and everything still works, because nothing here needs the network."
-            }
+          <button
+            type="button"
+            className={"pill net-badge" + (online ? "" : " is-offline")}
+            onClick={() => setPrivacyOpen(true)}
+            title="How your data stays on your device"
           >
-            {online ? "Works offline" : "Offline · still working"}
-          </span>
+            {online ? "Works offline" : "Offline"}
+          </button>
           <a
-            className="coffee"
+            className="pill"
+            href="https://github.com/benaduggan/area-code-map"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Source code
+          </a>
+          <a
+            className="pill coffee"
             href="https://buymeacoffee.com/benaduggan"
             target="_blank"
             rel="noopener noreferrer"
@@ -218,6 +225,7 @@ export function App() {
           </a>
         </div>
       </header>
+      <PrivacyDialog open={privacyOpen} onClose={() => setPrivacyOpen(false)} online={online} />
 
       <div className="layout">
         <aside className="sidebar">

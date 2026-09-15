@@ -1,10 +1,8 @@
 .map-container {
-  position: relative;
-  /* Fill the column, but never taller than the viewport minus the chrome
-     around it, so ultrawide screens do not get a map that scrolls. */
-  width: min(100%, calc((100vh - 11rem) * 975 / 640));
-  margin: 0 auto;
-  aspect-ratio: 975 / 640;
+  position: absolute;
+  inset: 0;
+  /* No fixed aspect ratio: the map fills whatever space the column has and
+     the projection letterboxes inside it; pan and zoom handle the rest. */
   background: var(--map-bg);
   border-radius: 0.75rem;
   overflow: hidden;

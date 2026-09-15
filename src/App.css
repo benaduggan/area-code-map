@@ -23,74 +23,74 @@
   align-items: center;
 }
 
-.coffee {
+.pill {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  padding: 0.4rem 0.8rem;
+  height: 2.25rem;
+  padding: 0 0.9rem;
+  font: inherit;
   font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--fg);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.pill:hover {
+  border-color: var(--muted);
+}
+
+.coffee {
   font-weight: 600;
   color: #1c1c1a;
   background: #ffdd00;
-  border-radius: 999px;
-  text-decoration: none;
+  border-color: #ffdd00;
 }
 
 .coffee:hover {
   background: #ffe64d;
-}
-
-.net-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.3rem 0.7rem;
-  font-size: 0.8rem;
-  color: var(--muted);
-  border: 1px solid var(--border);
-  border-radius: 999px;
+  border-color: #ffe64d;
 }
 
 .net-badge::before {
   content: "";
-  width: 0.5rem;
-  height: 0.5rem;
+  width: 0.55rem;
+  height: 0.55rem;
   border-radius: 50%;
   background: var(--muted);
 }
 
 .net-badge.is-offline {
-  color: var(--fg);
-  border-color: var(--accent);
+  color: var(--ok);
+  border-color: var(--ok);
+  font-weight: 600;
 }
 
 .net-badge.is-offline::before {
-  background: var(--accent);
-}
-
-.app-header h1 {
-  margin: 0;
-  font-size: clamp(1.5rem, 3vw, 2rem);
-}
-
-.tagline {
-  margin: 0.15rem 0 0;
-  color: var(--muted);
+  background: var(--ok);
 }
 
 .layout {
   display: grid;
   grid-template-columns: minmax(280px, 360px) 1fr;
   gap: 1.25rem;
-  align-items: start;
+  align-items: stretch;
+  /* Fill the viewport below the header; the map stretches to match. */
+  min-height: calc(100vh - 11rem);
 }
 
 @media (max-width: 800px) {
   .layout {
     grid-template-columns: 1fr;
+    min-height: 0;
   }
   .map-area {
     order: -1;
+    height: 58vh;
   }
 }
 
@@ -102,13 +102,20 @@
 }
 
 .panel {
-  max-height: min(75vh, 720px);
+  max-height: calc(100vh - 14rem);
   overflow-y: auto;
   padding-right: 0.25rem;
 }
 
+@media (max-width: 800px) {
+  .panel {
+    max-height: none;
+  }
+}
+
 .map-area {
   position: relative;
+  min-height: 320px;
 }
 
 .hint {
@@ -163,11 +170,13 @@
 
 .app-footer {
   margin-top: auto;
-  padding-top: 1rem;
+  padding-top: 0.5rem;
   font-size: 0.8rem;
   color: var(--muted);
 }
 
-.app-footer a {
+.app-footer .link {
+  font-size: inherit;
   color: inherit;
+  text-decoration: underline;
 }
