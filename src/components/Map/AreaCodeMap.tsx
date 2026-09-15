@@ -21,6 +21,7 @@ import {
   type Inset,
   type ShapeGeometry,
 } from "../../lib/geo/model";
+import { useI18n, type MessageKey } from "../../lib/i18n";
 import { HOUSE_PATH } from "../Icons";
 import "./AreaCodeMap.css";
 
@@ -48,6 +49,14 @@ export interface AreaCodeMapHandle {
   getExportRoot: () => HTMLElement | null;
 }
 
+/** Inset frames come from the geo model; their captions come from the dictionary. */
+const INSET_LABELS: Record<string, MessageKey> = {
+  alaska: "map.inset.alaska",
+  pacific: "map.inset.pacific",
+  hawaii: "map.inset.hawaii",
+  caribbean: "map.inset.caribbean",
+};
+
 const MIN_ZOOM = 1;
 const MAX_ZOOM = 12;
 
@@ -65,6 +74,7 @@ export const AreaCodeMap = forwardRef<AreaCodeMapHandle, AreaCodeMapProps>(funct
   },
   ref,
 ) {
+  const { t } = useI18n();
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const zoomRef = useRef<ZoomBehavior<SVGSVGElement, unknown> | null>(null);
@@ -253,35 +263,38 @@ export const AreaCodeMap = forwardRef<AreaCodeMapHandle, AreaCodeMapProps>(funct
 
   // Each inset is its own SVG cropped to its frame, so CSS can pin them to the
   // bottom of the map area whatever the container's shape.
-  const renderInset = (inset: Inset) => (
-    <svg
-      key={inset.id}
-      className={`inset inset-${inset.id}`}
-      viewBox={`${inset.frame.x} ${inset.frame.y} ${inset.frame.width} ${inset.frame.height}`}
-      role="img"
-      aria-label={inset.label}
-      data-inset={inset.id}
-    >
-      <rect
-        className="inset-frame"
-        x={inset.frame.x}
-        y={inset.frame.y}
-        width={inset.frame.width}
-        height={inset.frame.height}
-        rx={4}
-      />
-      <text
-        className="inset-label"
-        x={inset.frame.x + 6}
-        y={inset.frame.y + inset.frame.height - 5}
+  const renderInset = (inset: Inset) => {
+    const label = INSET_LABELS[inset.id] ? t(INSET_LABELS[inset.id]!) : inset.label;
+    return (
+      <svg
+        key={inset.id}
+        className={`inset inset-${inset.id}`}
+        viewBox={`${inset.frame.x} ${inset.frame.y} ${inset.frame.width} ${inset.frame.height}`}
+        role="img"
+        aria-label={label}
+        data-inset={inset.id}
       >
-        {inset.label}
-      </text>
-      {renderShapes(inset.id)}
-      {renderHome(inset.id, theirHomeShapeIds, false)}
-      {renderHome(inset.id, homeShapeIds, true)}
-    </svg>
-  );
+        <rect
+          className="inset-frame"
+          x={inset.frame.x}
+          y={inset.frame.y}
+          width={inset.frame.width}
+          height={inset.frame.height}
+          rx={4}
+        />
+        <text
+          className="inset-label"
+          x={inset.frame.x + 6}
+          y={inset.frame.y + inset.frame.height - 5}
+        >
+          {label}
+        </text>
+        {renderShapes(inset.id)}
+        {renderHome(inset.id, theirHomeShapeIds, false)}
+        {renderHome(inset.id, homeShapeIds, true)}
+      </svg>
+    );
+  };
   const inset = (id: string) => INSETS.find((i) => i.id === id)!;
 
   return (
@@ -291,7 +304,7 @@ export const AreaCodeMap = forwardRef<AreaCodeMapHandle, AreaCodeMapProps>(funct
         className="map-svg"
         viewBox={`0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`}
         role="img"
-        aria-label="Map of North American area codes"
+        aria-label={t("map.aria")}
         onClick={(e) => {
           if (e.target === e.currentTarget) onSelectShape?.(null);
         }}
@@ -329,8 +342,8 @@ export const AreaCodeMap = forwardRef<AreaCodeMapHandle, AreaCodeMapProps>(funct
         <button
           type="button"
           className="map-control"
-          aria-label="Zoom in"
-          title="Zoom in"
+          aria-label={t("map.zoomIn")}
+          title={t("map.zoomIn")}
           disabled={transform.k >= MAX_ZOOM}
           onClick={() => zoomBy(1.6)}
         >
@@ -339,8 +352,8 @@ export const AreaCodeMap = forwardRef<AreaCodeMapHandle, AreaCodeMapProps>(funct
         <button
           type="button"
           className="map-control"
-          aria-label="Zoom out"
-          title="Zoom out"
+          aria-label={t("map.zoomOut")}
+          title={t("map.zoomOut")}
           disabled={transform.k <= MIN_ZOOM}
           onClick={() => zoomBy(1 / 1.6)}
         >
@@ -350,8 +363,8 @@ export const AreaCodeMap = forwardRef<AreaCodeMapHandle, AreaCodeMapProps>(funct
           <button
             type="button"
             className="map-control map-reset"
-            aria-label="Reset view"
-            title="Reset view"
+            aria-label={t("map.resetView")}
+            title={t("map.resetView")}
             onClick={resetZoom}
           >
             ⟲

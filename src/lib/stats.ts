@@ -15,18 +15,28 @@ export interface Stats {
   newest: AreaCode | null;
 }
 
-const regionNames = (() => {
-  try {
-    return new Intl.DisplayNames(["en"], { type: "region" });
-  } catch {
-    return null;
-  }
-})();
+const regionNames = new Map<string, Intl.DisplayNames | null>();
 
-export function countryName(code: string | null): string {
-  if (!code) return "Unknown country";
+function displayNamesFor(locale: string): Intl.DisplayNames | null {
+  if (!regionNames.has(locale)) {
+    try {
+      regionNames.set(locale, new Intl.DisplayNames([locale], { type: "region" }));
+    } catch {
+      regionNames.set(locale, null);
+    }
+  }
+  return regionNames.get(locale) ?? null;
+}
+
+/**
+ * A country name in the caller's locale. The browser supplies the translation,
+ * so no country list ships with the app. `unknownLabel` covers numbers whose
+ * country we could not determine at all.
+ */
+export function countryName(code: string | null, locale = "en", unknownLabel?: string): string {
+  if (!code) return unknownLabel ?? "Unknown country";
   try {
-    return regionNames?.of(code) ?? code;
+    return displayNamesFor(locale)?.of(code) ?? code;
   } catch {
     return code;
   }

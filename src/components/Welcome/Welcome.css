@@ -17,15 +17,23 @@
   line-height: 1.55;
 }
 
-.welcome-tagline {
-  font-size: clamp(2rem, 5vw, 2.75rem);
+.welcome-header {
+  font-size: clamp(2rem, 5vw, 2.5rem);
   font-weight: 700;
   line-height: 1.1;
   letter-spacing: -0.015em;
 }
 
+.welcome-tagline {
+  font-size: clamp(2rem, 5vw, 2rem);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+}
+
 .welcome-lead {
-  font-size: 1.15rem;
+  font-size: 1.5rem;
+  font-weight: 600;
 }
 
 .welcome-privacy {

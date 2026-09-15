@@ -1,4 +1,5 @@
 import type { CountScale } from "../../lib/choropleth";
+import { useI18n } from "../../lib/i18n";
 import { HomeIcon } from "../Icons";
 import "./Legend.css";
 
@@ -22,12 +23,13 @@ interface Props {
 }
 
 export function Legend({ scale, ramp, items, home, theirHome, label }: Props) {
+  const { t } = useI18n();
   if (!scale && !items?.length && !home && !theirHome) return null;
   return (
-    <div className="legend" aria-label={label ?? "Map legend"}>
+    <div className="legend" aria-label={label ?? t("legend.aria")}>
       {scale && ramp && (
         <>
-          <span className="legend-title">Numbers</span>
+          <span className="legend-title">{t("legend.numbers")}</span>
           {scale.labels.map((l, i) => (
             <span key={l} className="legend-item">
               <span className="legend-swatch" style={{ background: ramp[i] }} />
@@ -50,7 +52,7 @@ export function Legend({ scale, ramp, items, home, theirHome, label }: Props) {
           <span className="legend-home">
             <HomeIcon />
           </span>
-          Your home
+          {t("legend.yourHome")}
         </span>
       )}
       {theirHome && (
@@ -58,7 +60,7 @@ export function Legend({ scale, ramp, items, home, theirHome, label }: Props) {
           <span className="legend-home is-theirs">
             <HomeIcon />
           </span>
-          Their home
+          {t("legend.theirHome")}
         </span>
       )}
     </div>

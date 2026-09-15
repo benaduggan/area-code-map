@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { useI18n } from "../../lib/i18n";
 import "./PrivacyDialog.css";
 
 interface Props {
@@ -8,6 +9,7 @@ interface Props {
 }
 
 export function PrivacyDialog({ open, onClose, online }: Props) {
+  const { t, tx } = useI18n();
   const ref = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
@@ -16,6 +18,10 @@ export function PrivacyDialog({ open, onClose, online }: Props) {
     if (open && !d.open) d.showModal();
     else if (!open && d.open) d.close();
   }, [open]);
+
+  const f12 = <kbd>F12</kbd>;
+  const network = <em>{t("privacy.check.network")}</em>;
+  const offline = <em>{t("privacy.check.offlineOption")}</em>;
 
   return (
     <dialog
@@ -30,88 +36,68 @@ export function PrivacyDialog({ open, onClose, online }: Props) {
     >
       <div className="privacy-panel">
         <div className="privacy-head">
-          <h2 id="privacy-title">How this stays private</h2>
-          <button type="button" className="link" onClick={onClose} aria-label="Close">
+          <h2 id="privacy-title">{t("privacy.title")}</h2>
+          <button type="button" className="link" onClick={onClose} aria-label={t("common.close")}>
             ✕
           </button>
         </div>
 
         <p className="privacy-status">
-          {online ? (
-            <>
-              You are online right now. Even so, this page has made no request with your data and
-              cannot: read on.
-            </>
-          ) : (
-            <>
-              <strong>You are offline</strong> and everything still works, because nothing here
-              needs the network.
-            </>
-          )}
+          {online
+            ? t("privacy.status.online")
+            : tx("privacy.status.offline", {
+                offline: <strong>{t("privacy.status.offline.strong")}</strong>,
+              })}
         </p>
 
-        <h3>What happens to your contacts</h3>
+        <h3>{t("privacy.contacts.heading")}</h3>
         <ul>
+          <li>{t("privacy.contacts.read")}</li>
           <li>
-            The file or text you import is read by JavaScript running in this tab. Phone numbers are
-            reduced to their area code and counted. Names are kept alongside the count so you can
-            see who is where.
+            {tx("privacy.contacts.noServer", {
+              link: (
+                <a
+                  href="https://github.com/benaduggan/area-code-map"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {t("privacy.contacts.noServer.link")}
+                </a>
+              ),
+            })}
           </li>
-          <li>
-            There is no server behind this site. It is a folder of static files served by GitHub
-            Pages, built from{" "}
-            <a
-              href="https://github.com/benaduggan/area-code-map"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              public source code
-            </a>
-            .
-          </li>
-          <li>
-            The page ships a Content-Security-Policy that tells your browser to refuse any
-            connection to any other origin. Even a bug could not upload your data.
-          </li>
-          <li>
-            A share link contains only a count per area code, and your own area code if you choose
-            to include it, packed into the part of the URL after the <code>#</code>, which browsers
-            never send to servers.
-          </li>
-          <li>
-            &ldquo;Remember on this device&rdquo; writes your per-area-code counts and your own area
-            code to your browser&rsquo;s local storage only. It never syncs anywhere. &ldquo;Forget
-            everything&rdquo; erases it.
-          </li>
+          <li>{t("privacy.contacts.csp")}</li>
+          <li>{tx("privacy.contacts.share", { hash: <code>#</code> })}</li>
+          <li>{t("privacy.contacts.remember")}</li>
         </ul>
 
-        <h3>See for yourself: cut the network</h3>
-        <p>
-          No web page can switch itself offline, but you can. Do one of these, then import your
-          contacts. Everything keeps working.
-        </p>
+        <h3>{t("privacy.check.heading")}</h3>
+        <p>{t("privacy.check.lead")}</p>
         <ul>
           <li>
-            <strong>Any device:</strong> turn on airplane mode. If you have opened this page before,
-            it is cached and loads without a connection.
+            <strong>{t("privacy.check.any.label")}</strong> {t("privacy.check.any.text")}
           </li>
           <li>
-            <strong>Chrome or Edge:</strong> press <kbd>F12</kbd> (or <kbd>⌥⌘I</kbd> on a Mac), open
-            the <em>Network</em> tab, and change the throttling dropdown from &ldquo;No
-            throttling&rdquo; to <em>Offline</em>. That blocks only this tab.
+            <strong>{t("privacy.check.chrome.label")}</strong>{" "}
+            {tx("privacy.check.chrome.text", {
+              f12,
+              mac: <kbd>⌥⌘I</kbd>,
+              network,
+              offline,
+            })}
           </li>
           <li>
-            <strong>Firefox:</strong> press <kbd>F12</kbd>, open <em>Network</em>, and set the
-            throttling dropdown to <em>Offline</em>.
+            <strong>{t("privacy.check.firefox.label")}</strong>{" "}
+            {tx("privacy.check.firefox.text", { f12, network, offline })}
           </li>
           <li>
-            <strong>Safari:</strong> enable the Develop menu in Settings → Advanced, then use
-            Develop → <em>Enter Responsive Design Mode</em>; or just use airplane mode.
+            <strong>{t("privacy.check.safari.label")}</strong>{" "}
+            {tx("privacy.check.safari.text", {
+              responsive: <em>{t("privacy.check.safari.responsive")}</em>,
+            })}
           </li>
         </ul>
-        <p className="privacy-foot">
-          You can also watch the Network tab while importing: it stays empty.
-        </p>
+        <p className="privacy-foot">{t("privacy.foot")}</p>
       </div>
     </dialog>
   );

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { shareUrlFor } from "../../lib/share/codec";
+import { useI18n } from "../../lib/i18n";
 import { downloadBlob, mapToPngBlob } from "../../lib/share/png";
 import "./ShareBar.css";
 
@@ -14,6 +15,7 @@ interface Props {
 }
 
 export function ShareBar({ counts, caption, cards, legend, getExportRoot, home }: Props) {
+  const { t, tx, n } = useI18n();
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -37,9 +39,9 @@ export function ShareBar({ counts, caption, cards, legend, getExportRoot, home }
   const copyLink = async () => {
     try {
       await navigator.clipboard.writeText(url);
-      flash("Link copied.");
+      flash(t("share.copied"));
     } catch {
-      flash("Could not access the clipboard. Select the link above and copy it.");
+      flash(t("share.copyFailed"));
     }
   };
 
@@ -51,7 +53,7 @@ export function ShareBar({ counts, caption, cards, legend, getExportRoot, home }
       const cs = getComputedStyle(document.documentElement);
       const v = (name: string, fallback: string) => cs.getPropertyValue(name).trim() || fallback;
       const blob = await mapToPngBlob(root, {
-        title: "Hometowns",
+        title: t("app.title"),
         caption,
         cards,
         legend,
@@ -66,9 +68,9 @@ export function ShareBar({ counts, caption, cards, legend, getExportRoot, home }
         exclude: sharedHome ? undefined : '[data-home="mine"]',
       });
       downloadBlob(blob, "hometowns.png");
-      flash("Image downloaded.");
+      flash(t("share.downloaded"));
     } catch (e) {
-      flash(e instanceof Error ? e.message : "Could not create the image.");
+      flash(e instanceof Error ? e.message : t("share.imageFailed"));
     } finally {
       setBusy(false);
     }
@@ -77,10 +79,10 @@ export function ShareBar({ counts, caption, cards, legend, getExportRoot, home }
   return (
     <div className="share">
       <button type="button" className="btn btn-primary" onClick={() => setOpen(true)}>
-        Share
+        {t("share.button")}
       </button>
       <button type="button" className="btn" onClick={() => void downloadPng()} disabled={busy}>
-        Download image
+        {t("share.download")}
       </button>
       {status && !open && (
         <span className="share-status share-status-inline" role="status">
@@ -98,20 +100,18 @@ export function ShareBar({ counts, caption, cards, legend, getExportRoot, home }
       >
         <div className="privacy-panel">
           <div className="privacy-head">
-            <h2 id="share-title">Share your map</h2>
+            <h2 id="share-title">{t("share.title")}</h2>
             <button
               type="button"
               className="link"
               onClick={() => setOpen(false)}
-              aria-label="Close"
+              aria-label={t("common.close")}
             >
               ✕
             </button>
           </div>
           <p className="privacy-status">
-            A share link carries <strong>only how many numbers you have per area code</strong>. No
-            names, no phone numbers, nothing about who your contacts are. Anyone who opens it sees
-            your map and can compare it with their own.
+            {tx("share.explain", { only: <strong>{t("share.explain.only")}</strong> })}
           </p>
 
           {home && (
@@ -121,28 +121,29 @@ export function ShareBar({ counts, caption, cards, legend, getExportRoot, home }
                 checked={includeHome}
                 onChange={(e) => setIncludeHome(e.target.checked)}
               />
-              <span>
-                Show that <strong>{home}</strong> is my home area code
-              </span>
+              <span>{tx("share.includeHome", { npa: <strong>{home}</strong> })}</span>
             </label>
           )}
 
-          <h3>Link</h3>
+          <h3>{t("share.linkHeading")}</h3>
           <input
             className="share-url"
             type="text"
             readOnly
             value={url}
-            aria-label="Share link"
+            aria-label={t("share.linkAria")}
             onFocus={(e) => e.currentTarget.select()}
           />
           <p className="skipped-note">
-            {counts.size} area codes packed into {url.length - url.indexOf("#") - 1} characters
-            after the <code>#</code>, which browsers never send to any server.
+            {tx("share.packed", {
+              codes: n(counts.size),
+              chars: n(url.length - url.indexOf("#") - 1),
+              hash: <code>#</code>,
+            })}
           </p>
           <div className="share-actions">
             <button type="button" className="btn btn-primary" onClick={() => void copyLink()}>
-              Copy link
+              {t("share.copy")}
             </button>
             <button
               type="button"
@@ -150,13 +151,12 @@ export function ShareBar({ counts, caption, cards, legend, getExportRoot, home }
               onClick={() => void downloadPng()}
               disabled={busy}
             >
-              Download image
+              {t("share.download")}
             </button>
           </div>
           <p className="skipped-note">
-            The image shows the whole map with your stats and legend on it, rendered in your
-            browser.
-            {home && !includeHome && " Your home marker is left out."}
+            {t("share.imageNote")}
+            {home && !includeHome && t("share.homeLeftOut")}
           </p>
           {status && (
             <p className="share-status" role="status">

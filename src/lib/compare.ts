@@ -4,6 +4,7 @@
  * CVD separation and contrast on both surfaces; "both" is also hatched.
  */
 import { countsByShape } from "./coverage";
+import type { MessageKey, Translator } from "./i18n";
 
 export type CompareClass = "mine" | "theirs" | "both";
 
@@ -19,11 +20,20 @@ export const COMPARE_DARK: Record<CompareClass, string> = {
   both: "#199e70",
 };
 
-export const COMPARE_LABELS: Record<CompareClass, string> = {
-  mine: "Only you",
-  theirs: "Only them",
-  both: "Both of you",
+const COMPARE_LABEL_KEYS: Record<CompareClass, MessageKey> = {
+  mine: "compare.mine",
+  theirs: "compare.theirs",
+  both: "compare.both",
 };
+
+/** The three legend labels in the active locale. */
+export function compareLabels(t: Translator["t"]): Record<CompareClass, string> {
+  return {
+    mine: t(COMPARE_LABEL_KEYS.mine),
+    theirs: t(COMPARE_LABEL_KEYS.theirs),
+    both: t(COMPARE_LABEL_KEYS.both),
+  };
+}
 
 export interface Comparison {
   /** Per-shape class for painting. */

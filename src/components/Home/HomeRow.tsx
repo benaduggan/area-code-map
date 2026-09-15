@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { HomeIcon } from "../Icons";
 import { describeHome } from "../../lib/home";
+import { useI18n } from "../../lib/i18n";
 import { HomeCodeField } from "./HomeCodeField";
 
 interface Props {
@@ -13,6 +14,7 @@ interface Props {
  * With no home yet, offers to add one. Editing swaps in the field.
  */
 export function HomeRow({ home, onChange }: Props) {
+  const { t, tx } = useI18n();
   const [editing, setEditing] = useState(false);
 
   if (editing) {
@@ -27,7 +29,7 @@ export function HomeRow({ home, onChange }: Props) {
           autoFocus
         />
         <button type="button" className="link" onClick={() => setEditing(false)}>
-          Done
+          {t("common.done")}
         </button>
       </div>
     );
@@ -38,16 +40,14 @@ export function HomeRow({ home, onChange }: Props) {
       <HomeIcon className="home-glyph" />
       {home ? (
         <>
-          <span>
-            Home: <strong>{home}</strong>
-          </span>
-          <span className="home-place">{describeHome(home)}</span>
+          <span>{tx("home.summary", { npa: <strong>{home}</strong> })}</span>
+          <span className="home-place">{describeHome(home, t)}</span>
         </>
       ) : (
-        <span className="home-place">Mark your own area code on the map</span>
+        <span className="home-place">{t("home.prompt")}</span>
       )}
       <button type="button" className="link" onClick={() => setEditing(true)}>
-        {home ? "Change" : "Add yours"}
+        {home ? t("common.change") : t("home.addYours")}
       </button>
     </div>
   );

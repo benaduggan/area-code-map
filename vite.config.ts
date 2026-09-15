@@ -50,7 +50,7 @@ export default defineConfig({
         name: "Hometowns",
         short_name: "Hometowns",
         description:
-          "Where your people started. A map of the area codes in your contacts, built entirely in your browser and never uploaded.",
+          "A map of the area codes from your contacts, entirely local to your browser and never scraped.",
         theme_color: "#d97706",
         background_color: "#fafaf7",
         display: "standalone",

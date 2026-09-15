@@ -3,7 +3,7 @@
   "version": "2.0.0",
   "private": true,
   "type": "module",
-  "description": "Hometowns: where your people started. A fully client-side map of the area codes in your contacts.",
+  "description": "A fully client-side map of the area codes in your contacts.",
   "repository": "github:benaduggan/area-code-map",
   "author": "Ben Duggan",
   "license": "MIT",
@@ -20,6 +20,7 @@
     "data:shapes": "bun run scripts/build-shapes.ts",
     "data:areacodes": "bun run scripts/build-areacodes.ts",
     "data:build": "bun run data:shapes && bun run data:areacodes",
+    "i18n:bless": "bun run scripts/i18n-bless.ts",
     "check": "bun run typecheck && bun run lint && bun run format:check && bun run test",
     "e2e": "bun run e2e/privacy.e2e.ts"
   },

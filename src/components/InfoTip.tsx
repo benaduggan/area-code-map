@@ -8,6 +8,3 @@ export function InfoTip({ text }: { text: string }) {
     </span>
   );
 }
-
-export const REMEMBER_TIP =
-  "Saved in this browser's local storage, which never leaves your device and is not synced anywhere. Use “Forget everything” to erase it.";

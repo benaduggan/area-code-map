@@ -1,14 +1,15 @@
 import { useMemo, useState } from "react";
 import { displayCities, getAreaCode, type AreaCode } from "../../lib/areacodes";
 import type { ImportResult } from "../../lib/contacts";
-import { computeHomeStats, computeStats } from "../../lib/stats";
-import { COMPARE_LABELS } from "../../lib/compare";
+import { computeHomeStats, computeStats, countryName } from "../../lib/stats";
+import { compareLabels } from "../../lib/compare";
+import { useI18n } from "../../lib/i18n";
 import { AreaCodeCard } from "../Detail/AreaCodeCard";
 import { NameList } from "../Detail/NameList";
 import { ShareBar } from "../Share/ShareBar";
 import { SkippedDialog } from "./SkippedDialog";
 import type { Comparison } from "../../lib/compare";
-import { InfoTip, REMEMBER_TIP } from "../InfoTip";
+import { InfoTip } from "../InfoTip";
 import { HomeRow } from "../Home/HomeRow";
 import "./ResultsPanel.css";
 
@@ -47,6 +48,7 @@ export function ResultsPanel({
   home,
   onHomeChange,
 }: Props) {
+  const { t, tx, tn, n, locale } = useI18n();
   const stats = useMemo(() => computeStats(result), [result]);
   const homeStats = useMemo(() => (home ? computeHomeStats(result, home) : null), [result, home]);
   const ranked = useMemo(() => {
@@ -66,73 +68,97 @@ export function ResultsPanel({
   const { summary } = result;
   const [skippedOpen, setSkippedOpen] = useState(false);
   const skippedCount = summary.foreign + summary.unrecognised;
+  const labels = compareLabels(t);
+
+  const notMappedParts = [
+    summary.foreign > 0 ? t("results.notMapped.foreign", { count: n(summary.foreign) }) : null,
+    summary.unrecognised > 0
+      ? t("results.notMapped.unrecognised", { count: n(summary.unrecognised) })
+      : null,
+  ].filter(Boolean);
 
   return (
     <section className="results">
       <div className="panel-head">
-        <h2 className="panel-title">Your map</h2>
+        <h2 className="panel-title">{t("results.title")}</h2>
         <button type="button" className="link" onClick={onForget}>
-          Forget everything
+          {t("results.forget")}
         </button>
       </div>
 
       <HomeRow home={home} onChange={onHomeChange} />
 
       <div className="stat-grid">
-        <Stat value={summary.nanp} label="numbers" />
-        <Stat value={result.counts.size} label="area codes" />
-        <Stat
-          value={stats.regions}
-          label={stats.regions === 1 ? "state or province" : "states & provinces"}
-        />
-        <Stat value={stats.countries} label={stats.countries === 1 ? "country" : "countries"} />
+        <Stat value={summary.nanp} label={t("results.stat.numbers")} />
+        <Stat value={result.counts.size} label={t("results.stat.areaCodes")} />
+        <Stat value={stats.regions} label={tn("results.stat.regions", stats.regions)} />
+        <Stat value={stats.countries} label={tn("results.stat.countries", stats.countries)} />
       </div>
 
       <ul className="facts">
         {stats.top && (
           <li>
-            Most common: <strong>{stats.top.npa}</strong> ({stats.top.regionName}), {stats.topCount}{" "}
-            {stats.topCount === 1 ? "number" : "numbers"}
+            {tx("results.fact.top", {
+              npa: <strong>{stats.top.npa}</strong>,
+              region: stats.top.regionName,
+              count: tn("map.numbers", stats.topCount),
+            })}
           </li>
         )}
         {home && homeStats && (
           <li>
-            From your home area code (<strong>{home}</strong>): {homeStats.fromHome}{" "}
-            {homeStats.fromHome === 1 ? "number" : "numbers"}
+            {tx("results.fact.fromHome", {
+              npa: <strong>{home}</strong>,
+              count: tn("map.numbers", homeStats.fromHome),
+            })}
             {homeStats.fromHome > 0 &&
-              `, ${Math.round(homeStats.fromHomeShare * 100)}% of your map`}
+              t("results.fact.fromHomeShare", {
+                percent: n(Math.round(homeStats.fromHomeShare * 100)),
+              })}
           </li>
         )}
         {homeStats?.farthest && (
           <li>
-            Farthest from home: <strong>{homeStats.farthest.npa}</strong> (
-            {placeOf(homeStats.farthest)}), about{" "}
-            {Math.round(homeStats.farthestMiles / 10) * 10 >= 100
-              ? (Math.round(homeStats.farthestMiles / 100) * 100).toLocaleString()
-              : Math.round(homeStats.farthestMiles)}{" "}
-            miles away
+            {tx("results.fact.farthest", {
+              npa: <strong>{homeStats.farthest.npa}</strong>,
+              place: placeOf(homeStats.farthest),
+              miles: n(roundMiles(homeStats.farthestMiles)),
+            })}
           </li>
         )}
         {stats.oldest && (
           <li>
-            Oldest area code you know: <strong>{stats.oldest.npa}</strong> ({placeOf(stats.oldest)}
-            ), in service since {stats.oldest.inService}
+            {tx("results.fact.oldest", {
+              npa: <strong>{stats.oldest.npa}</strong>,
+              place: placeOf(stats.oldest),
+              year: stats.oldest.inService,
+            })}
           </li>
         )}
         {stats.newest && stats.newest.inService >= 2010 && (
           <li>
-            Newest area code: <strong>{stats.newest.npa}</strong> ({placeOf(stats.newest)}), added
-            in {stats.newest.inService}
+            {tx("results.fact.newest", {
+              npa: <strong>{stats.newest.npa}</strong>,
+              place: placeOf(stats.newest),
+              year: stats.newest.inService,
+            })}
           </li>
         )}
         {stats.foreignCountries.length > 0 && (
           <li>
-            Also:{" "}
-            {stats.foreignCountries
-              .slice(0, 4)
-              .map((f) => `${f.count} in ${f.country}`)
-              .join(", ")}
-            {stats.foreignCountries.length > 4 && `, and ${stats.foreignCountries.length - 4} more`}
+            {t("results.fact.also", {
+              list: stats.foreignCountries
+                .slice(0, 4)
+                .map((f) =>
+                  t("results.fact.alsoItem", {
+                    count: n(f.count),
+                    country: countryName(f.code, locale, t("skipped.unknownCountry")),
+                  }),
+                )
+                .join(", "),
+            })}
+            {stats.foreignCountries.length > 4 &&
+              t("results.fact.alsoMore", { count: n(stats.foreignCountries.length - 4) })}
           </li>
         )}
         {skippedCount > 0 && (
@@ -144,11 +170,9 @@ export function ResultsPanel({
                 e.preventDefault();
                 setSkippedOpen(true);
               }}
-              title="See which numbers could not be placed"
+              title={t("results.notMapped.title")}
             >
-              Not on the map: {summary.foreign > 0 && `${summary.foreign} outside North America`}
-              {summary.foreign > 0 && summary.unrecognised > 0 && ", "}
-              {summary.unrecognised > 0 && `${summary.unrecognised} unrecognised`} ›
+              {t("results.notMapped", { parts: notMappedParts.join(", ") })}
             </a>
           </li>
         )}
@@ -157,34 +181,41 @@ export function ResultsPanel({
       {comparison && (
         <ul className="facts">
           <li>
-            You both know people in <strong>{comparison.result.both.length}</strong>{" "}
-            {comparison.result.both.length === 1 ? "area code" : "area codes"}
-            {comparison.result.both.length > 0 && `: ${comparison.result.both.join(", ")}`}
+            {tx(
+              comparison.result.both.length === 1
+                ? "compare.fact.both.one"
+                : "compare.fact.both.other",
+              { count: <strong>{n(comparison.result.both.length)}</strong> },
+            )}
+            {comparison.result.both.length > 0 &&
+              t("compare.fact.bothList", { list: comparison.result.both.join(", ") })}
           </li>
           <li>
-            Only you: {comparison.result.mineOnly.length} · Only them:{" "}
-            {comparison.result.theirsOnly.length}
+            {t("compare.fact.only", {
+              mine: n(comparison.result.mineOnly.length),
+              theirs: n(comparison.result.theirsOnly.length),
+            })}
           </li>
         </ul>
       )}
 
       <ShareBar
         counts={result.counts}
-        caption={`${summary.nanp} numbers across ${result.counts.size} area codes`}
+        caption={t("results.shareCaption", {
+          numbers: n(summary.nanp),
+          codes: n(result.counts.size),
+        })}
         cards={[
-          { value: summary.nanp, label: "numbers" },
-          { value: result.counts.size, label: "area codes" },
-          {
-            value: stats.regions,
-            label: stats.regions === 1 ? "state or province" : "states & provinces",
-          },
-          { value: stats.countries, label: stats.countries === 1 ? "country" : "countries" },
+          { value: summary.nanp, label: t("results.stat.numbers") },
+          { value: result.counts.size, label: t("results.stat.areaCodes") },
+          { value: stats.regions, label: tn("results.stat.regions", stats.regions) },
+          { value: stats.countries, label: tn("results.stat.countries", stats.countries) },
         ]}
         legend={
           comparison
             ? (["mine", "both", "theirs"] as const).map((c) => ({
                 color: compareColors[c],
-                label: COMPARE_LABELS[c],
+                label: labels[c],
               }))
             : scaleLegend
         }
@@ -203,13 +234,13 @@ export function ResultsPanel({
           checked={remember}
           onChange={(e) => onRememberChange(e.target.checked)}
         />
-        <span>Remember this map on this device</span>
-        <InfoTip text={REMEMBER_TIP} />
+        <span>{t("results.remember")}</span>
+        <InfoTip text={t("tip.remember")} />
       </label>
 
       {addMore}
 
-      <h3 className="panel-title">By area code</h3>
+      <h3 className="panel-title">{t("results.byAreaCode")}</h3>
       <div className="card-list">
         {ranked.map(({ code, count, theirs }) => (
           <AreaCodeCard
@@ -231,6 +262,11 @@ export function ResultsPanel({
   );
 }
 
+/** Round to a tidy distance: hundreds once we are past 100 miles. */
+function roundMiles(miles: number): number {
+  return Math.round(miles / 10) * 10 >= 100 ? Math.round(miles / 100) * 100 : Math.round(miles);
+}
+
 /** "St. Louis, Missouri" or just the region when no city is curated. */
 function placeOf(a: AreaCode): string {
   const city = displayCities(a)[0];
@@ -239,9 +275,10 @@ function placeOf(a: AreaCode): string {
 }
 
 function Stat({ value, label }: { value: number; label: string }) {
+  const { n } = useI18n();
   return (
     <div className="stat">
-      <span className="stat-value">{value.toLocaleString()}</span>
+      <span className="stat-value">{n(value)}</span>
       <span className="stat-label">{label}</span>
     </div>
   );

@@ -1,47 +1,28 @@
 # Hometowns
 
-Where your people started.
-
-Most people keep the number they got as a teenager, so an area code says
-where someone started, not where they ended up. Drop in your contacts and
-watch North America light up with the hometowns of the people you know.
-Everything runs in your browser. Nothing is uploaded. Share the picture, not
-the phone numbers.
+Most people keep their first phone number. Their area code tells a story.
+Drop in your contacts and see how far your contacts reach across North America.
+Everything runs locally in your browser, and nothing is uploaded or scraped.
 
 **Live site:** https://benaduggan.github.io/area-code-map/
 
 ## What it does
 
-- **Interactive map** of every in-service area code in the US, Canada, and the
-  Caribbean, with search by number, city, state, or province.
-- **Your own area code**: type the three digits and your home is outlined and
-  marked on the map. Your stats are framed around it: how many of your people
-  share it, and who is farthest from it.
-- **Import your contacts** four ways: pick them from your phone (Chrome on
-  Android, Safari on iOS), upload a vCard or CSV export, or paste anything with
-  phone numbers in it.
-- **Your map**: a choropleth of how many numbers you have per area code, with
-  the names behind each region one click away, plus a few stats (most common,
-  oldest, newest code you know).
-- **Share**: copy a link that encodes only your per-area-code counts (and
-  your own area code, if you tick the box), or download the map as an image. Friends who open your link can add their own
-  contacts and see a side-by-side comparison.
-- **Works offline** once loaded, as an installable web app.
+- **Interactive map** of every in-service area code in the US, Canada, and the Caribbean, with search by number, city, state, or province.
+- **Your own area code**: you can add your area code to show your home marked on the map. Then we can show some stats are framed around it as well.
+- **Import your contacts** pick them from your phone, upload a vCard or CSV export, or paste anything with phone numbers in it.
+- **Your map**: a choropleth of how many numbers you have per area code, with the names behind each region.
+- **Share**: copy a link that encodes only your per-area-code counts (and your own area code, if you tick the box), or download the map as an image. Friends who open your link can add their own contacts and see an interesting comparison.
+- **English and Spanish**, picked from your browser and switchable from the header.
 
-## Privacy, concretely
+## Privacy
 
-- This is a static site. There is no server, no database, and no account.
-- Contacts are parsed in your browser tab. Raw phone numbers and names are held
-  in memory only and are gone when you close the tab.
+- This is a static site. There is no server, no database, and no accounts.
+- Your contacts are parsed in your browser. Raw phone numbers and names are held in memory and when you close the tab by default.
 - The only things the app keeps (and only if you tick the box) are a count per
   area code and your own area code. Those are also the only things a share
   link can contain.
-- The production page ships a Content-Security-Policy that forbids the browser
-  from connecting anywhere but the page's own origin, and the test suite
-  includes an end-to-end check that fails if any request leaves the page
-  during an import.
-- The source is this repository and the site is deployed from it by GitHub
-  Actions, so what you read here is what runs.
+- The source is this repository and the site is deployed from it by GitHub Actions, so what you read here is what runs.
 
 ## Data sources
 
@@ -51,23 +32,4 @@ the phone numbers.
   simplified to TopoJSON. Area codes added since then are overlays, which the
   build joins onto the polygon they share via NANPA's overlay complexes. One
   polygon (721, Sint Maarten) is hand-drawn.
-- **Cities**: a curated list in `data/source/cities.json`. Pull requests welcome.
-
-See [PLAN.md](./PLAN.md) for the design and the reasoning behind these choices.
-
-## Development
-
-Requires [Bun](https://bun.sh).
-
-```sh
-bun install
-bun run dev          # dev server
-bun run check        # typecheck, lint, format check, unit tests
-bun run build        # production build to dist/
-bun run e2e          # privacy end-to-end check against the build (needs Chromium)
-bun run data:build   # regenerate src/data from data/source
-```
-
-## License
-
-MIT
+- **Cities**: a curated list in `data/source/cities.json`.

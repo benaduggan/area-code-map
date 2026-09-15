@@ -12,7 +12,7 @@ import { searchAreaCodes } from "./lib/search";
 import { DARK_RAMP, LIGHT_RAMP, makeCountScale } from "./lib/choropleth";
 import { mergeResults, type ImportResult } from "./lib/contacts";
 import { shareFromHash, type SharePayload } from "./lib/share/codec";
-import { COMPARE_DARK, COMPARE_LABELS, COMPARE_LIGHT, compareCounts } from "./lib/compare";
+import { COMPARE_DARK, COMPARE_LIGHT, compareCounts, compareLabels } from "./lib/compare";
 import { computeStats } from "./lib/stats";
 import { getAreaCode } from "./lib/areacodes";
 import "./components/Share/ShareBar.css";
@@ -31,6 +31,8 @@ import { describeHome } from "./lib/home";
 import { PrivacyDialog } from "./components/Privacy/PrivacyDialog";
 import { useTheme, type Theme } from "./lib/useTheme";
 import { GitHubIcon } from "./components/Icons";
+import { LanguageSelect } from "./components/Language/LanguageSelect";
+import { formatDate, useI18n, type MessageKey } from "./lib/i18n";
 import { useOnline } from "./lib/useOnline";
 import "./App.css";
 
@@ -53,10 +55,15 @@ function sharedFromLocation(): SharePayload | null {
 }
 
 const NEXT_THEME: Record<Theme, Theme> = { system: "light", light: "dark", dark: "system" };
-const THEME_LABEL: Record<Theme, string> = { system: "Auto", light: "Light", dark: "Dark" };
+const THEME_LABEL: Record<Theme, MessageKey> = {
+  system: "app.theme.system",
+  light: "app.theme.light",
+  dark: "app.theme.dark",
+};
 const THEME_ICON: Record<Theme, string> = { system: "◐", light: "☀", dark: "☾" };
 
 export function App() {
+  const { t, tx, tn, n, locale } = useI18n();
   const mapRef = useRef<AreaCodeMapHandle>(null);
   const [query, setQuery] = useState("");
   const [selectedShape, setSelectedShape] = useState<string | null>(null);
@@ -150,6 +157,7 @@ export function App() {
   );
   const ramp = dark ? DARK_RAMP : LIGHT_RAMP;
   const compareColors = dark ? COMPARE_DARK : COMPARE_LIGHT;
+  const compareLabel = compareLabels(t);
 
   const fillFor = useMemo(() => {
     if (comparison) {
@@ -210,38 +218,42 @@ export function App() {
       <p>
         {comparing ? (
           <>
-            Comparing with a shared map of <strong>{sharedResult.summary.nanp}</strong> numbers in{" "}
-            <strong>{shared.counts.size}</strong> area codes.
+            {tx("compare.banner", {
+              numbers: <strong>{n(sharedResult.summary.nanp)}</strong>,
+              codes: <strong>{n(shared.counts.size)}</strong>,
+            })}
             {shared.home && (
-              <>
-                {" "}
-                They&rsquo;re from <strong>{shared.home}</strong>.
-              </>
+              <> {tx("compare.banner.home", { npa: <strong>{shared.home}</strong> })}</>
             )}
           </>
         ) : (
           <>
-            You&rsquo;re viewing someone&rsquo;s shared map:{" "}
-            <strong>{sharedResult.summary.nanp}</strong> numbers in{" "}
-            <strong>{shared.counts.size}</strong> area codes
-            {sharedStats.top && (
-              <>
-                , mostly <strong>{sharedStats.top.npa}</strong> ({sharedStats.top.regionName})
-              </>
-            )}
-            .
+            {sharedStats.top
+              ? tx("shared.banner.mostly", {
+                  numbers: <strong>{n(sharedResult.summary.nanp)}</strong>,
+                  codes: <strong>{n(shared.counts.size)}</strong>,
+                  npa: <strong>{sharedStats.top.npa}</strong>,
+                  region: sharedStats.top.regionName,
+                })
+              : tx("shared.banner", {
+                  numbers: <strong>{n(sharedResult.summary.nanp)}</strong>,
+                  codes: <strong>{n(shared.counts.size)}</strong>,
+                })}
             {shared.home && (
               <>
                 {" "}
-                They&rsquo;re from <strong>{shared.home}</strong> ({describeHome(shared.home)}).
+                {tx("shared.banner.home", {
+                  npa: <strong>{shared.home}</strong>,
+                  place: describeHome(shared.home, t),
+                })}
               </>
             )}{" "}
-            Add yours below to compare.
+            {t("shared.addYours")}
           </>
         )}
       </p>
       <button type="button" className="btn" onClick={dismissShared}>
-        {comparing ? "Stop comparing" : "Dismiss"}
+        {comparing ? t("compare.stop") : t("common.dismiss")}
       </button>
     </div>
   );
@@ -255,33 +267,34 @@ export function App() {
     <div className="app">
       <header className="app-header">
         <div className="title-block">
-          <h1>Hometowns</h1>
+          <h1>{t("app.title")}</h1>
         </div>
         <div className="header-links">
           <button
             type="button"
             className={"pill net-badge" + (online ? "" : " is-offline")}
             onClick={() => setPrivacyOpen(true)}
-            title="How your data stays on your device"
+            title={t("app.net.title")}
           >
-            {online ? "Works offline" : "Offline"}
+            {online ? t("app.net.online") : t("app.net.offline")}
           </button>
           <button
             type="button"
             className="pill"
             onClick={() => setTheme(NEXT_THEME[theme])}
-            title="Switch theme"
-            aria-label={`Theme: ${THEME_LABEL[theme]}. Switch theme`}
+            title={t("app.theme.switch")}
+            aria-label={t("app.theme.aria", { theme: t(THEME_LABEL[theme]) })}
           >
-            {THEME_ICON[theme]} {THEME_LABEL[theme]}
+            {THEME_ICON[theme]} {t(THEME_LABEL[theme])}
           </button>
+          <LanguageSelect />
           <a
             className="pill"
             href="https://github.com/benaduggan/area-code-map"
             target="_blank"
             rel="noopener noreferrer"
           >
-            <GitHubIcon /> Source code
+            <GitHubIcon /> {t("app.sourceCode")}
           </a>
         </div>
       </header>
@@ -310,8 +323,8 @@ export function App() {
               <section className="panel" aria-live="polite">
                 <h2 className="panel-title">
                   {results.length === 0
-                    ? "No matches"
-                    : `${results.length} area code${results.length === 1 ? "" : "s"}`}
+                    ? t("search.noMatches")
+                    : tn("search.count", results.length)}
                 </h2>
                 <div className="card-list">
                   {results.map((code) => (
@@ -328,9 +341,11 @@ export function App() {
             ) : selectedShape && !selectedCode ? (
               <section className="panel">
                 <div className="panel-head">
-                  <h2 className="panel-title">{shapeCodes[0]?.regionName ?? "Region"}</h2>
+                  <h2 className="panel-title">
+                    {shapeCodes[0]?.regionName ?? t("search.regionFallback")}
+                  </h2>
                   <button type="button" className="link" onClick={() => selectShape(null)}>
-                    Back
+                    {t("common.back")}
                   </button>
                 </div>
                 <div className="card-list">
@@ -372,7 +387,7 @@ export function App() {
               <div className="panel">
                 <HomeRow home={home} onChange={setHome} />
                 <ImportPanel onImport={handleImport} compact />
-                <h2 className="panel-title">Their area codes</h2>
+                <h2 className="panel-title">{t("shared.theirAreaCodes")}</h2>
                 <div className="card-list">
                   {[...shared.counts.entries()]
                     .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
@@ -388,12 +403,12 @@ export function App() {
               <div className="panel">
                 <HomeRow home={home} onChange={setHome} />
                 <ImportPanel onImport={handleImport} />
-                <p className="hint">Or search above, or click any region on the map.</p>
+                <p className="hint">{t("search.hint")}</p>
               </div>
             )}
             {showTop && (
               <button type="button" className="to-top" onClick={scrollToTop}>
-                ↑ Top
+                {t("app.toTop")}
               </button>
             )}
           </aside>
@@ -411,7 +426,7 @@ export function App() {
               renderTooltip={(shapeId) => {
                 const primary = primaryCodeOnShape(shapeId);
                 if (!primary) return shapeId;
-                const n = shapeCounts?.get(shapeId);
+                const count = shapeCounts?.get(shapeId);
                 const cls = comparison?.shapeClass.get(shapeId);
                 return (
                   <>
@@ -419,20 +434,20 @@ export function App() {
                     <br />
                     {primary.regionName}
                     {cls
-                      ? ` · ${COMPARE_LABELS[cls]}`
-                      : n
-                        ? ` · ${n} ${n === 1 ? "number" : "numbers"}`
+                      ? ` · ${compareLabel[cls]}`
+                      : count
+                        ? ` · ${tn("map.numbers", count)}`
                         : ""}
-                    {homeShapeSet.has(shapeId) && " · your home"}
+                    {homeShapeSet.has(shapeId) && ` · ${t("map.tooltip.yourHome")}`}
                   </>
                 );
               }}
             />
             {comparison ? (
               <Legend
-                label="Compare legend"
+                label={t("legend.compareAria")}
                 items={(["mine", "both", "theirs"] as const).map((c) => ({
-                  label: COMPARE_LABELS[c],
+                  label: compareLabel[c],
                   color: compareColors[c],
                   hatched: c === "both",
                 }))}
@@ -453,19 +468,23 @@ export function App() {
 
       <footer className="app-footer">
         <span>
-          {areaCodes.length} area codes · NANPA data as of {areaCodeDataDate} ·{" "}
+          {t("app.footer.data", {
+            count: n(areaCodes.length),
+            date: formatDate(areaCodeDataDate, locale),
+          })}{" "}
+          ·{" "}
           <button type="button" className="link" onClick={() => setPrivacyOpen(true)}>
-            Nothing you import leaves your browser.
+            {t("app.footer.privacy")}
           </button>
         </span>
         <span className="credits">
-          Made by{" "}
+          {t("app.footer.madeBy")}{" "}
           <a href="https://digdug.dev/" target="_blank" rel="noopener noreferrer">
             Ben Duggan
           </a>
           {" · "}
           <a href="https://buymeacoffee.com/benaduggan" target="_blank" rel="noopener noreferrer">
-            ☕ Buy me a coffee
+            {t("app.footer.coffee")}
           </a>
         </span>
       </footer>

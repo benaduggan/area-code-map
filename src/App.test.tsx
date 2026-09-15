@@ -1,4 +1,5 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, screen } from "@testing-library/react";
+import { renderWithI18n as render } from "./test/render";
 import { App } from "./App";
 import { encodeCounts, encodeShare } from "./lib/share/codec";
 

@@ -1,4 +1,5 @@
 import { displayCities, type AreaCode } from "../../lib/areacodes";
+import { useI18n } from "../../lib/i18n";
 import "./AreaCodeCard.css";
 
 interface Props {
@@ -14,6 +15,7 @@ interface Props {
 }
 
 export function AreaCodeCard({ code, selected, onSelect, extra, badge, badgeSecondary }: Props) {
+  const { t, n } = useI18n();
   const cities = displayCities(code);
   const siblings = code.overlayComplex.filter((s) => s !== code.npa);
   return (
@@ -29,17 +31,17 @@ export function AreaCodeCard({ code, selected, onSelect, extra, badge, badgeSeco
         <span className="card-meta">
           {code.regionName}
           {code.country !== "US" && code.country !== "CA" ? "" : ` · ${code.country}`}
-          {" · since "}
-          {code.inService}
-          {siblings.length > 0 && <> · overlays {siblings.join(", ")}</>}
+          {" · "}
+          {t("card.since", { year: code.inService })}
+          {siblings.length > 0 && ` · ${t("card.overlays", { list: siblings.join(", ") })}`}
         </span>
         {extra}
       </span>
       {badge !== undefined && (
         <span className="card-badge">
-          {badge.toLocaleString()}
+          {n(badge)}
           {badgeSecondary !== undefined && (
-            <span className="card-badge-secondary"> · {badgeSecondary.toLocaleString()}</span>
+            <span className="card-badge-secondary"> · {n(badgeSecondary)}</span>
           )}
         </span>
       )}

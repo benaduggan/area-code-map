@@ -1,5 +1,5 @@
-import { render } from "@testing-library/react";
 import { aggregateContacts } from "../../lib/contacts";
+import { renderWithI18n as render } from "../../test/render";
 import { NameList } from "./NameList";
 
 const text = (r: ReturnType<typeof aggregateContacts>, npa: string) =>

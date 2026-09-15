@@ -1,5 +1,6 @@
 import { useId, useState } from "react";
 import { describeHome } from "../../lib/home";
+import { useI18n } from "../../lib/i18n";
 import "./HomeCodeField.css";
 
 interface Props {
@@ -17,6 +18,7 @@ interface Props {
  */
 export function HomeCodeField({ value, onChange, autoFocus, label }: Props) {
   const id = useId();
+  const { t } = useI18n();
   const [draft, setDraft] = useState(value ?? "");
 
   const handle = (raw: string) => {
@@ -31,7 +33,7 @@ export function HomeCodeField({ value, onChange, autoFocus, label }: Props) {
   return (
     <div className="home-field">
       <label className="home-label" htmlFor={id}>
-        {label ?? "Your area code"}
+        {label ?? t("home.fieldLabel")}
       </label>
       <div className="home-row">
         <input
@@ -49,9 +51,7 @@ export function HomeCodeField({ value, onChange, autoFocus, label }: Props) {
           aria-describedby={`${id}-hint`}
         />
         <span id={`${id}-hint`} className="home-hint" aria-live="polite">
-          {committed
-            ? describeHome(committed)
-            : "The three digits at the front of your own phone number."}
+          {committed ? describeHome(committed, t) : t("home.fieldHint")}
         </span>
       </div>
     </div>

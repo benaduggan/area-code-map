@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import type { SkippedNumbers } from "../../lib/contacts";
 import { countryName } from "../../lib/stats";
+import { useI18n } from "../../lib/i18n";
 
 interface Props {
   open: boolean;
@@ -12,6 +13,7 @@ const MAX_SHOWN = 300;
 
 /** Lists the numbers an import could not place on the map. Memory only. */
 export function SkippedDialog({ open, onClose, skipped }: Props) {
+  const { t, n, locale } = useI18n();
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     const d = ref.current;
@@ -32,26 +34,21 @@ export function SkippedDialog({ open, onClose, skipped }: Props) {
     >
       <div className="privacy-panel">
         <div className="privacy-head">
-          <h2 id="skipped-title">Numbers not on the map</h2>
-          <button type="button" className="link" onClick={onClose} aria-label="Close">
+          <h2 id="skipped-title">{t("skipped.title")}</h2>
+          <button type="button" className="link" onClick={onClose} aria-label={t("common.close")}>
             ✕
           </button>
         </div>
-        <p className="privacy-status">
-          These stay in this tab like everything else. They are listed so you can spot a typo or a
-          number worth fixing in your contacts.
-        </p>
+        <p className="privacy-status">{t("skipped.intro")}</p>
 
         {skipped.foreign.length > 0 && (
           <>
-            <h3>Outside North America ({skipped.foreign.length})</h3>
-            <p className="skipped-note">
-              Valid numbers whose country code is not +1, so they have no North American area code.
-            </p>
-            {groupByCountry(skipped.foreign).map((g) => (
+            <h3>{t("skipped.foreignHeading", { count: n(skipped.foreign.length) })}</h3>
+            <p className="skipped-note">{t("skipped.foreignNote")}</p>
+            {groupByCountry(skipped.foreign, locale, t("skipped.unknownCountry")).map((g) => (
               <div key={g.country}>
                 <p className="skipped-country">
-                  {g.country} ({g.items.length})
+                  {t("skipped.country", { country: g.country, count: n(g.items.length) })}
                 </p>
                 <List items={g.items} />
               </div>
@@ -60,11 +57,8 @@ export function SkippedDialog({ open, onClose, skipped }: Props) {
         )}
         {skipped.unrecognised.length > 0 && (
           <>
-            <h3>Unrecognised ({skipped.unrecognised.length})</h3>
-            <p className="skipped-note">
-              Too short, malformed, or a +1 number whose first three digits are not an area code in
-              service.
-            </p>
+            <h3>{t("skipped.unrecognisedHeading", { count: n(skipped.unrecognised.length) })}</h3>
+            <p className="skipped-note">{t("skipped.unrecognisedNote")}</p>
             <List items={skipped.unrecognised} />
           </>
         )}
@@ -75,18 +69,21 @@ export function SkippedDialog({ open, onClose, skipped }: Props) {
 
 function groupByCountry(
   foreign: SkippedNumbers["foreign"],
+  locale: string,
+  unknownLabel: string,
 ): { country: string; items: string[] }[] {
   const groups = new Map<string, string[]>();
   for (const f of foreign) {
-    const name = countryName(f.country);
+    const name = countryName(f.country, locale, unknownLabel);
     groups.set(name, [...(groups.get(name) ?? []), f.e164]);
   }
   return [...groups.entries()]
     .map(([country, items]) => ({ country, items }))
-    .sort((a, b) => b.items.length - a.items.length || a.country.localeCompare(b.country));
+    .sort((a, b) => b.items.length - a.items.length || a.country.localeCompare(b.country, locale));
 }
 
 function List({ items }: { items: string[] }) {
+  const { t, n } = useI18n();
   const shown = items.slice(0, MAX_SHOWN);
   return (
     <>
@@ -96,7 +93,9 @@ function List({ items }: { items: string[] }) {
         ))}
       </ul>
       {items.length > shown.length && (
-        <p className="skipped-note">…and {items.length - shown.length} more.</p>
+        <p className="skipped-note">
+          {t("skipped.more", { count: n(items.length - shown.length) })}
+        </p>
       )}
     </>
   );
