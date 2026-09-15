@@ -62,18 +62,6 @@
   border-color: var(--muted);
 }
 
-.coffee {
-  font-weight: 600;
-  color: #1c1c1a;
-  background: #ffdd00;
-  border-color: #ffdd00;
-}
-
-.coffee:hover {
-  background: #ffe64d;
-  border-color: #ffe64d;
-}
-
 .net-badge::before {
   content: "";
   width: 0.55rem;
@@ -245,10 +233,23 @@
 }
 
 .app-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.25rem 1.5rem;
   margin-top: auto;
   padding-top: 0.5rem;
   font-size: 0.8rem;
   color: var(--muted);
+}
+
+.credits a {
+  color: var(--accent-text);
+  text-decoration: none;
+}
+
+.credits a:hover {
+  text-decoration: underline;
 }
 
 .app-footer .link {

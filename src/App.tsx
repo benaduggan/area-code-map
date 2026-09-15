@@ -248,14 +248,6 @@ export function App() {
           >
             <GitHubIcon /> Source code
           </a>
-          <a
-            className="pill coffee"
-            href="https://buymeacoffee.com/benaduggan"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            ☕ Buy me a coffee
-          </a>
         </div>
       </header>
       <PrivacyDialog open={privacyOpen} onClose={() => setPrivacyOpen(false)} online={online} />
@@ -397,10 +389,22 @@ export function App() {
       </div>
 
       <footer className="app-footer">
-        {areaCodes.length} area codes · NANPA data as of {areaCodeDataDate} ·{" "}
-        <button type="button" className="link" onClick={() => setPrivacyOpen(true)}>
-          Nothing you import leaves your browser.
-        </button>
+        <span>
+          {areaCodes.length} area codes · NANPA data as of {areaCodeDataDate} ·{" "}
+          <button type="button" className="link" onClick={() => setPrivacyOpen(true)}>
+            Nothing you import leaves your browser.
+          </button>
+        </span>
+        <span className="credits">
+          Made by{" "}
+          <a href="https://digdug.dev/" target="_blank" rel="noopener noreferrer">
+            Ben Duggan
+          </a>
+          {" · "}
+          <a href="https://buymeacoffee.com/benaduggan" target="_blank" rel="noopener noreferrer">
+            ☕ Buy me a coffee
+          </a>
+        </span>
       </footer>
     </div>
   );
