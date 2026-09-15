@@ -37,6 +37,10 @@ export interface ShapeGeometry {
   bounds: [[number, number], [number, number]];
   /** True when the projected shape is too small to see; render a marker instead. */
   tiny: boolean;
+  /** Projected area, used to draw large (union) polygons beneath smaller ones. */
+  area: number;
+  /** Shapes with identical geometry share a footprint id (the first shape's id). */
+  footprint: string;
 }
 
 const TINY_PX = 7;
@@ -182,9 +186,24 @@ function build(): ShapeGeometry[] {
         // Dense urban codes in the main view are small too, but there the user
         // can zoom; markers would just stack on top of each other in Manhattan.
         tiny: inset.id !== "main" && w < TINY_PX && h < TINY_PX,
+        area: Math.abs(path.area(f)),
+        footprint: "",
       });
     }
   }
+  // Overlay codes drawn as exact copies of another polygon share a footprint.
+  const byPath = new Map<string, string>();
+  for (const s of out) {
+    const first = byPath.get(s.path);
+    if (first) s.footprint = first;
+    else {
+      byPath.set(s.path, s.id);
+      s.footprint = s.id;
+    }
+  }
+  // Largest first, so a polygon that is the union of its neighbours (917 over
+  // 212/646/718/347, 878 over 412/724) is painted underneath them.
+  out.sort((a, b) => b.area - a.area);
   return out;
 }
 

@@ -40,12 +40,26 @@
 }
 
 .panel {
-  max-height: min(70vh, 640px);
+  max-height: min(75vh, 720px);
   overflow-y: auto;
+  padding-right: 0.25rem;
 }
 
-.panel.intro {
+.map-area {
+  position: relative;
+}
+
+.hint {
+  margin-top: 1rem;
+  font-size: 0.9rem;
   color: var(--muted);
+}
+
+.import + .import,
+.results + .import {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
 }
 
 .panel-head {

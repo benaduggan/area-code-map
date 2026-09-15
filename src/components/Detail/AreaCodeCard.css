@@ -43,3 +43,16 @@
   font-size: 0.8rem;
   color: var(--muted);
 }
+
+.card-badge {
+  flex: 0 0 auto;
+  align-self: flex-start;
+  margin-left: auto;
+  padding: 0.1rem 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg);
+  background: var(--bg-elevated);
+  border-radius: 999px;
+}

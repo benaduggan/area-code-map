@@ -5,11 +5,13 @@ interface Props {
   code: AreaCode;
   selected?: boolean;
   onSelect?: (code: AreaCode) => void;
-  /** Extra line, e.g. contact counts, rendered under the cities. */
+  /** Extra line, e.g. contact names, rendered under the cities. */
   extra?: React.ReactNode;
+  /** A count shown at the right edge. */
+  badge?: number;
 }
 
-export function AreaCodeCard({ code, selected, onSelect, extra }: Props) {
+export function AreaCodeCard({ code, selected, onSelect, extra, badge }: Props) {
   const cities = displayCities(code);
   const siblings = code.overlayComplex.filter((s) => s !== code.npa);
   return (
@@ -31,6 +33,7 @@ export function AreaCodeCard({ code, selected, onSelect, extra }: Props) {
         </span>
         {extra}
       </span>
+      {badge !== undefined && <span className="card-badge">{badge.toLocaleString()}</span>}
     </button>
   );
 }

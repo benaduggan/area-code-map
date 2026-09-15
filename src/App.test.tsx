@@ -18,6 +18,23 @@ describe("App", () => {
     expect(screen.getByRole("button", { name: /^984/ })).toBeInTheDocument();
   });
 
+  it("imports pasted numbers and shows counts", () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: "Paste numbers" }));
+    fireEvent.change(screen.getByLabelText("Paste phone numbers"), {
+      target: { value: "(919) 555-0100, 919-555-0101, +1 212 555 0199, +44 20 7946 0958" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Map these" }));
+    expect(screen.getByRole("heading", { name: "Your map" })).toBeInTheDocument();
+    expect(screen.getByText(/Most common:/)).toHaveTextContent("919");
+    expect(screen.getByText(/outside North America/)).toBeInTheDocument();
+    const shape = document.querySelector('[data-shape="919"]') as SVGPathElement;
+    expect(shape.style.fill).not.toBe("");
+    expect((document.querySelector('[data-shape="312"]') as SVGPathElement).style.fill).toBe("");
+    fireEvent.click(screen.getByRole("button", { name: "Forget everything" }));
+    expect(screen.getByRole("heading", { name: "Light up your map" })).toBeInTheDocument();
+  });
+
   it("shows the codes on a clicked region", () => {
     render(<App />);
     fireEvent.click(document.querySelector('[data-shape="212"]')!);
