@@ -13,6 +13,7 @@ describe("aggregateContacts", () => {
     expect(Object.fromEntries(result.counts)).toEqual({ "919": 2, "212": 1, "416": 1 });
     expect(result.names.get("919")).toEqual(["Bob", "Jane Doe"]);
     expect(result.names.get("416")).toBeUndefined();
+    expect(result.skipped).toEqual({ foreign: ["+442079460958"], unrecognised: ["12345"] });
     expect(result.summary).toEqual({
       source: "paste",
       contacts: 3,

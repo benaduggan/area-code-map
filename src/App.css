@@ -1,11 +1,12 @@
 .app {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100%;
   max-width: 1800px;
   margin: 0 auto;
   padding: 1rem clamp(1rem, 3vw, 2rem);
   gap: 1rem;
+  overflow: hidden;
 }
 
 .app-header {
@@ -79,14 +80,20 @@
   grid-template-columns: minmax(280px, 360px) 1fr;
   gap: 1.25rem;
   align-items: stretch;
-  /* Fill the viewport below the header; the map stretches to match. */
-  min-height: calc(100vh - 11rem);
+  /* Take all the height between header and footer; the sidebar scrolls
+     inside itself and the map stretches to match, so the page never does. */
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 @media (max-width: 800px) {
+  .app {
+    height: auto;
+    min-height: 100%;
+    overflow: visible;
+  }
   .layout {
     grid-template-columns: 1fr;
-    min-height: 0;
   }
   .map-area {
     order: -1;
@@ -99,18 +106,21 @@
   flex-direction: column;
   gap: 0.75rem;
   min-width: 0;
-}
-
-.panel {
-  max-height: calc(100vh - 14rem);
+  min-height: 0;
   overflow-y: auto;
-  padding-right: 0.25rem;
+  scrollbar-width: thin;
+  padding-right: 0.5rem;
 }
 
 @media (max-width: 800px) {
-  .panel {
-    max-height: none;
+  .sidebar {
+    overflow: visible;
+    padding-right: 0;
   }
+}
+
+.panel {
+  min-height: 0;
 }
 
 .map-area {

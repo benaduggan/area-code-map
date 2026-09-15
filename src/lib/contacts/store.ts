@@ -83,7 +83,7 @@ export function loadResult(): ImportResult | null {
       unrecognised: 0,
       ...parsed.summary,
     };
-    return { summary, counts, names };
+    return { summary, counts, names, skipped: { foreign: [], unrecognised: [] } };
   } catch {
     return null;
   }
@@ -104,6 +104,7 @@ function loadLegacyCounts(): ImportResult | null {
     summary: { source: "paste", contacts: 0, numbers: nanp, nanp, foreign: 0, unrecognised: 0 },
     counts,
     names: new Map(),
+    skipped: { foreign: [], unrecognised: [] },
   };
 }
 

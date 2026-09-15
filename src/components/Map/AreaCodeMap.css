@@ -113,3 +113,13 @@
 .map-tooltip strong {
   font-variant-numeric: tabular-nums;
 }
+
+.hatch {
+  pointer-events: none;
+}
+
+.hatch-line {
+  stroke: var(--bg);
+  stroke-width: 1.5;
+  opacity: 0.8;
+}

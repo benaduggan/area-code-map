@@ -34,6 +34,9 @@ describe("App", () => {
     expect(screen.getByRole("heading", { name: "Your map" })).toBeInTheDocument();
     expect(screen.getByText(/Most common:/)).toHaveTextContent("919");
     expect(screen.getByText(/outside North America/)).toBeInTheDocument();
+    expect(screen.getByText(/Oldest area code you know/)).toHaveTextContent(
+      "212 (New York (Manhattan), New York)",
+    );
     const shape = document.querySelector('[data-shape="919"]') as SVGPathElement;
     expect(shape.style.fill).not.toBe("");
     expect((document.querySelector('[data-shape="312"]') as SVGPathElement).style.fill).toBe("");
@@ -62,7 +65,7 @@ describe("App", () => {
     fireEvent.click(screen.getByRole("button", { name: "Map these" }));
     expect(screen.getByText(/Comparing with a shared map/)).toBeInTheDocument();
     expect(screen.getByText(/You both know people in/)).toHaveTextContent("1 area code: 919");
-    expect(screen.getByRole("button", { name: "Copy share link" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Share" })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Stop comparing" }));
     expect(location.hash).toBe("");
     expect(screen.queryByText(/Comparing with/)).toBeNull();

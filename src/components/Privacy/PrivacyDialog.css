@@ -76,3 +76,24 @@
 .privacy-panel a {
   color: var(--accent);
 }
+
+.skipped-list {
+  columns: 2;
+  column-gap: 1.5rem;
+  margin: 0.25rem 0 0;
+  padding-left: 1.2rem;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.9rem;
+  word-break: break-all;
+}
+
+.skipped-list li {
+  margin: 0.1rem 0;
+  break-inside: avoid;
+}
+
+.skipped-note {
+  margin: 0.2rem 0 0.4rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}

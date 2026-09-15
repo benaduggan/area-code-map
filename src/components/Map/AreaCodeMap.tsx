@@ -17,6 +17,8 @@ import "./AreaCodeMap.css";
 export interface AreaCodeMapProps {
   /** Optional fill color per shape id; undefined falls back to the base fill. */
   fillFor?: (shapeId: string) => string | undefined;
+  /** Shapes that also get a diagonal hatch, so a class is not carried by color alone. */
+  hatchFor?: (shapeId: string) => boolean;
   selectedShapeIds?: ReadonlySet<string>;
   highlightedShapeIds?: ReadonlySet<string>;
   onSelectShape?: (shapeId: string | null) => void;
@@ -35,7 +37,15 @@ const MIN_ZOOM = 1;
 const MAX_ZOOM = 12;
 
 export const AreaCodeMap = forwardRef<AreaCodeMapHandle, AreaCodeMapProps>(function AreaCodeMap(
-  { fillFor, selectedShapeIds, highlightedShapeIds, onSelectShape, onHoverShape, renderTooltip },
+  {
+    fillFor,
+    hatchFor,
+    selectedShapeIds,
+    highlightedShapeIds,
+    onSelectShape,
+    onHoverShape,
+    renderTooltip,
+  },
   ref,
 ) {
   const svgRef = useRef<SVGSVGElement>(null);
@@ -171,17 +181,20 @@ export const AreaCodeMap = forwardRef<AreaCodeMapHandle, AreaCodeMapProps>(funct
           />
         );
       }
+      const hatched = hatchFor?.(s.id) ?? false;
       return (
-        <path
-          key={s.id}
-          className={classFor(s.id)}
-          d={s.path}
-          style={style}
-          data-shape={s.id}
-          onPointerEnter={() => handleEnter(s.id)}
-          onPointerLeave={handleLeave}
-          onClick={() => handleClick(s.id)}
-        />
+        <g key={s.id}>
+          <path
+            className={classFor(s.id)}
+            d={s.path}
+            style={style}
+            data-shape={s.id}
+            onPointerEnter={() => handleEnter(s.id)}
+            onPointerLeave={handleLeave}
+            onClick={() => handleClick(s.id)}
+          />
+          {hatched && <path className="hatch" d={s.path} fill="url(#hatch)" />}
+        </g>
       );
     });
 
@@ -205,6 +218,17 @@ export const AreaCodeMap = forwardRef<AreaCodeMapHandle, AreaCodeMapProps>(funct
           if (e.target === e.currentTarget) onSelectShape?.(null);
         }}
       >
+        <defs>
+          <pattern
+            id="hatch"
+            patternUnits="userSpaceOnUse"
+            width="6"
+            height="6"
+            patternTransform="rotate(45)"
+          >
+            <line x1="0" y1="0" x2="0" y2="6" className="hatch-line" />
+          </pattern>
+        </defs>
         <g className="main" transform={transform.toString()}>
           {renderShapes("main", transform.k)}
         </g>

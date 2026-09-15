@@ -31,3 +31,7 @@
   height: 0.8rem;
   border-radius: 2px;
 }
+
+.legend-swatch.is-hatched {
+  background-image: repeating-linear-gradient(45deg, transparent 0 2px, var(--bg) 2px 3.5px);
+}
