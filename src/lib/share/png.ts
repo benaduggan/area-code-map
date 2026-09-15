@@ -1,9 +1,10 @@
 /**
- * Render the map to a PNG in the browser: the whole map at its home view
- * (whatever the current pan/zoom), with the stat cards, the legend, a title
- * and a caption painted on top. CSS classes do not carry into a serialized
- * SVG, so computed fill/stroke are copied onto each mark first. Nothing here
- * touches the network.
+ * Render the map to a PNG in the browser: the main map at its home view
+ * (whatever the current pan/zoom) plus the inset SVGs where they sit on
+ * screen, with the stat cards, the legend, a title and a caption painted on
+ * top. CSS classes do not carry into a serialized SVG, so computed
+ * fill/stroke are copied onto each mark first. Nothing here touches the
+ * network.
  */
 const EXPORT_SCALE = 2;
 const FONT = "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
@@ -25,42 +26,42 @@ export interface PngOptions {
   colors: PngColors;
 }
 
-export async function mapToPngBlob(svg: SVGSVGElement, options: PngOptions): Promise<Blob> {
-  const clone = svg.cloneNode(true) as SVGSVGElement;
-  const originals = svg.querySelectorAll<SVGElement>("path, circle, rect, text, line");
-  const copies = clone.querySelectorAll<SVGElement>("path, circle, rect, text, line");
-  originals.forEach((el, i) => {
-    const copy = copies[i];
-    if (!copy) return;
-    const cs = getComputedStyle(el);
-    copy.removeAttribute("class");
-    copy.setAttribute("fill", cs.fill);
-    copy.setAttribute("stroke", cs.stroke);
-    copy.setAttribute("stroke-width", cs.strokeWidth);
-    copy.setAttribute("stroke-linejoin", cs.strokeLinejoin);
-    copy.setAttribute("opacity", cs.opacity);
-    if (el instanceof SVGTextElement) {
-      copy.setAttribute("font-size", cs.fontSize);
-      copy.setAttribute("font-family", cs.fontFamily);
-    }
-    copy.style.transition = "";
-  });
-  // Show the whole map, not the current zoom.
-  clone.querySelector(".main")?.setAttribute("transform", "");
-  clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+interface Piece {
+  img: HTMLImageElement;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
 
-  const viewBox = svg.viewBox.baseVal;
-  const width = viewBox.width;
-  const height = viewBox.height;
+export async function mapToPngBlob(root: HTMLElement, options: PngOptions): Promise<Blob> {
+  const rootRect = root.getBoundingClientRect();
+  const width = Math.round(rootRect.width);
+  const height = Math.round(rootRect.height);
   const headerHeight = 44;
   const footerHeight = 36;
-  clone.setAttribute("width", String(width));
-  clone.setAttribute("height", String(height));
 
-  const xml = new XMLSerializer().serializeToString(clone);
-  const url = URL.createObjectURL(new Blob([xml], { type: "image/svg+xml;charset=utf-8" }));
+  const pieces: Piece[] = [];
+  const urls: string[] = [];
   try {
-    const img = await loadImage(url);
+    for (const svg of Array.from(root.querySelectorAll<SVGSVGElement>("svg"))) {
+      const rect = svg.getBoundingClientRect();
+      const clone = inlineStyles(svg);
+      const url = URL.createObjectURL(
+        new Blob([new XMLSerializer().serializeToString(clone)], {
+          type: "image/svg+xml;charset=utf-8",
+        }),
+      );
+      urls.push(url);
+      pieces.push({
+        img: await loadImage(url),
+        x: rect.left - rootRect.left,
+        y: rect.top - rootRect.top,
+        w: rect.width,
+        h: rect.height,
+      });
+    }
+
     const canvas = document.createElement("canvas");
     canvas.width = width * EXPORT_SCALE;
     canvas.height = (headerHeight + height + footerHeight) * EXPORT_SCALE;
@@ -73,7 +74,7 @@ export async function mapToPngBlob(svg: SVGSVGElement, options: PngOptions): Pro
     ctx.fillRect(0, 0, width, headerHeight + height + footerHeight);
     ctx.fillStyle = c.background;
     ctx.fillRect(0, headerHeight, width, height);
-    ctx.drawImage(img, 0, headerHeight, width, height);
+    for (const p of pieces) ctx.drawImage(p.img, p.x, headerHeight + p.y, p.w, p.h);
 
     // Title
     ctx.fillStyle = c.text;
@@ -139,8 +140,37 @@ export async function mapToPngBlob(svg: SVGSVGElement, options: PngOptions): Pro
       ),
     );
   } finally {
-    URL.revokeObjectURL(url);
+    for (const u of urls) URL.revokeObjectURL(u);
   }
+}
+
+/** Clone an SVG with computed styles inlined and the main group reset to the home view. */
+function inlineStyles(svg: SVGSVGElement): SVGSVGElement {
+  const clone = svg.cloneNode(true) as SVGSVGElement;
+  const originals = svg.querySelectorAll<SVGElement>("path, circle, rect, text, line");
+  const copies = clone.querySelectorAll<SVGElement>("path, circle, rect, text, line");
+  originals.forEach((el, i) => {
+    const copy = copies[i];
+    if (!copy) return;
+    const cs = getComputedStyle(el);
+    copy.removeAttribute("class");
+    copy.setAttribute("fill", cs.fill);
+    copy.setAttribute("stroke", cs.stroke);
+    copy.setAttribute("stroke-width", cs.strokeWidth);
+    copy.setAttribute("stroke-linejoin", cs.strokeLinejoin);
+    copy.setAttribute("opacity", cs.opacity);
+    if (el instanceof SVGTextElement) {
+      copy.setAttribute("font-size", cs.fontSize);
+      copy.setAttribute("font-family", cs.fontFamily);
+    }
+    copy.style.transition = "";
+  });
+  clone.querySelector(".main")?.setAttribute("transform", "");
+  clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+  const rect = svg.getBoundingClientRect();
+  clone.setAttribute("width", String(Math.max(1, Math.round(rect.width))));
+  clone.setAttribute("height", String(Math.max(1, Math.round(rect.height))));
+  return clone;
 }
 
 function roundRect(

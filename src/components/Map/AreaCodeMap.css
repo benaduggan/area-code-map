@@ -1,6 +1,7 @@
 .map-container {
   position: absolute;
   inset: 0;
+  container-type: size;
   /* No fixed aspect ratio: the map fills whatever space the column has and
      the projection letterboxes inside it; pan and zoom handle the rest. */
   background: var(--map-bg);
@@ -48,6 +49,58 @@
 .shape.is-selected {
   stroke: var(--fg);
   stroke-width: 2;
+}
+
+/* Insets sit in a bar pinned to the bottom of the map area, sized from its
+   height, so they stay put whatever shape the column has. */
+.insets {
+  position: absolute;
+  left: 0.5rem;
+  right: 0.5rem;
+  bottom: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  height: clamp(84px, 27%, 210px);
+  pointer-events: none;
+}
+
+/* Wide, short containers: the main map already fills the height, so a
+   shorter bar keeps the insets off the Gulf coast. */
+@container (aspect-ratio > 1.55) {
+  .insets {
+    height: clamp(64px, 19%, 150px);
+  }
+}
+
+/* Narrow containers: shrink so Alaska, the Pacific stack and the Caribbean
+   all fit across without clipping. */
+@container (width < 520px) {
+  .insets {
+    height: clamp(64px, 19%, 120px);
+  }
+}
+
+.insets-left,
+.insets-stack {
+  display: flex;
+  gap: 0.4rem;
+  height: 100%;
+}
+
+.insets-stack {
+  flex-direction: column;
+}
+
+.insets svg {
+  display: block;
+  height: 100%;
+  width: auto;
+  pointer-events: auto;
+}
+
+.insets-stack svg {
+  height: calc(50% - 0.2rem);
 }
 
 .inset-frame {

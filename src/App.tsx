@@ -307,7 +307,7 @@ export function App() {
                 onForget={forget}
                 remember={remember}
                 onRememberChange={handleRemember}
-                getSvg={() => mapRef.current?.getSvg() ?? null}
+                getExportRoot={() => mapRef.current?.getExportRoot() ?? null}
                 addMore={<ImportPanel onImport={handleImport} compact />}
                 scaleLegend={
                   scale ? scale.labels.map((label, i) => ({ color: ramp[i]!, label })) : []

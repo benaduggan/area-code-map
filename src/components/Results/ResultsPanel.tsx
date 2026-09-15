@@ -17,7 +17,7 @@ interface Props {
   onForget: () => void;
   remember: boolean;
   onRememberChange: (on: boolean) => void;
-  getSvg: () => SVGSVGElement | null;
+  getExportRoot: () => HTMLElement | null;
   /** Import controls, rendered above the long list so they are easy to find. */
   addMore?: React.ReactNode;
   /** Legend swatches for the exported image (count classes). */
@@ -34,7 +34,7 @@ export function ResultsPanel({
   onForget,
   remember,
   onRememberChange,
-  getSvg,
+  getExportRoot,
   addMore,
   comparison,
   scaleLegend,
@@ -160,7 +160,7 @@ export function ResultsPanel({
               }))
             : scaleLegend
         }
-        getSvg={getSvg}
+        getExportRoot={getExportRoot}
       />
       <SkippedDialog
         open={skippedOpen}
