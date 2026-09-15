@@ -2,9 +2,10 @@ import type { ImportResult } from "./types";
 
 /**
  * Opt-in persistence of an import in this browser's localStorage: counts,
- * names and the summary. Local storage never leaves the device and is not
- * synced by the browser to any account. Every access is wrapped because
- * storage can be unavailable (private mode, blocked site data).
+ * names, the summary, and the numbers that could not be mapped. Local
+ * storage never leaves the device and is not synced by the browser to any
+ * account. Every access is wrapped because storage can be unavailable
+ * (private mode, blocked site data).
  */
 const KEY = "area-code-map:import:v2";
 const LEGACY_KEY = "area-code-map:counts:v1";
@@ -14,6 +15,7 @@ interface Stored {
   summary: ImportResult["summary"];
   counts: Record<string, number>;
   names: Record<string, string[]>;
+  skipped?: ImportResult["skipped"];
   savedAt: string;
 }
 
@@ -46,6 +48,7 @@ export function saveResult(result: ImportResult): void {
       summary: result.summary,
       counts: Object.fromEntries(result.counts),
       names: Object.fromEntries(result.names),
+      skipped: result.skipped,
       savedAt: new Date().toISOString(),
     };
     localStorage.setItem(KEY, JSON.stringify(stored));
@@ -83,7 +86,13 @@ export function loadResult(): ImportResult | null {
       unrecognised: 0,
       ...parsed.summary,
     };
-    return { summary, counts, names, skipped: { foreign: [], unrecognised: [] } };
+    const strings = (v: unknown) =>
+      Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : [];
+    const skipped = {
+      foreign: strings(parsed.skipped?.foreign),
+      unrecognised: strings(parsed.skipped?.unrecognised),
+    };
+    return { summary, counts, names, skipped };
   } catch {
     return null;
   }

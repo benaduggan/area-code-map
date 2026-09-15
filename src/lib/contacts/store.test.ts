@@ -30,6 +30,7 @@ describe("store", () => {
     expect(Object.fromEntries(back.counts)).toEqual({ "919": 2 });
     expect(back.names.get("919")).toEqual(["Bob", "Jane"]);
     expect(back.summary).toEqual(r.summary);
+    expect(back.skipped).toEqual({ foreign: ["+442079460958"], unrecognised: [] });
   });
 
   it("disabling clears everything", () => {
