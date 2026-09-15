@@ -3,6 +3,7 @@ import { AreaCodeMap, type AreaCodeMapHandle } from "./components/Map/AreaCodeMa
 import { Legend } from "./components/Map/Legend";
 import { SearchBox } from "./components/Search/SearchBox";
 import { AreaCodeCard } from "./components/Detail/AreaCodeCard";
+import { NameList } from "./components/Detail/NameList";
 import { ImportPanel } from "./components/Import/ImportPanel";
 import { ResultsPanel } from "./components/Results/ResultsPanel";
 import { areaCodeDataDate, areaCodes, overlayLabel, type AreaCode } from "./lib/areacodes";
@@ -292,11 +293,7 @@ export function App() {
                     onSelect={selectCode}
                     badge={badgeFor(code.npa)}
                     badgeSecondary={comparing ? (shared!.get(code.npa) ?? 0) : undefined}
-                    extra={
-                      result?.names.get(code.npa)?.length ? (
-                        <span className="card-names">{result.names.get(code.npa)!.join(", ")}</span>
-                      ) : undefined
-                    }
+                    extra={result ? <NameList result={result} npa={code.npa} /> : undefined}
                   />
                 ))}
               </div>

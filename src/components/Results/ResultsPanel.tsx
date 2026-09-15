@@ -3,6 +3,7 @@ import { displayCities, getAreaCode, type AreaCode } from "../../lib/areacodes";
 import type { ImportResult } from "../../lib/contacts";
 import { computeStats } from "../../lib/stats";
 import { AreaCodeCard } from "../Detail/AreaCodeCard";
+import { NameList } from "../Detail/NameList";
 import { ShareBar } from "../Share/ShareBar";
 import { SkippedDialog } from "./SkippedDialog";
 import type { Comparison } from "../../lib/compare";
@@ -157,8 +158,8 @@ export function ResultsPanel({
             badge={count}
             badgeSecondary={comparison ? theirs : undefined}
             extra={
-              selectedCode?.npa === code.npa && result.names.get(code.npa)?.length ? (
-                <span className="card-names">{result.names.get(code.npa)!.join(", ")}</span>
+              selectedCode?.npa === code.npa ? (
+                <NameList result={result} npa={code.npa} />
               ) : undefined
             }
           />

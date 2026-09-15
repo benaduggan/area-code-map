@@ -28,9 +28,21 @@ describe("store", () => {
     setRememberEnabled(true, r);
     const back = loadResult()!;
     expect(Object.fromEntries(back.counts)).toEqual({ "919": 2 });
-    expect(back.names.get("919")).toEqual(["Bob", "Jane"]);
+    expect(back.names.get("919")).toEqual([
+      { name: "Bob", count: 1 },
+      { name: "Jane", count: 1 },
+    ]);
     expect(back.summary).toEqual(r.summary);
     expect(back.skipped).toEqual({ foreign: ["+442079460958"], unrecognised: [] });
+  });
+
+  it("reads names saved by the older string-only format", () => {
+    localStorage.setItem("area-code-map:remember", "1");
+    localStorage.setItem(
+      "area-code-map:import:v2",
+      JSON.stringify({ counts: { "919": 2 }, names: { "919": ["Ann"] }, savedAt: "x" }),
+    );
+    expect(loadResult()!.names.get("919")).toEqual([{ name: "Ann", count: 1 }]);
   });
 
   it("disabling clears everything", () => {
