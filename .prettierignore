@@ -1,0 +1,8 @@
+dist
+coverage
+node_modules
+bun.lock
+data/source
+data/build
+src/data/*.json
+dev-dist

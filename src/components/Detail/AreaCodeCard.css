@@ -1,0 +1,63 @@
+.card {
+  display: flex;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  font: inherit;
+  text-align: left;
+  color: var(--fg);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 0.6rem;
+  cursor: pointer;
+}
+
+.card:hover {
+  background: var(--bg-elevated);
+}
+
+.card.is-selected {
+  border-color: var(--accent);
+  background: var(--bg-elevated);
+}
+
+.card-npa {
+  flex: 0 0 3.2rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+.card-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.card-title {
+  font-weight: 500;
+}
+
+.card-meta {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.card-badge {
+  flex: 0 0 auto;
+  align-self: flex-start;
+  margin-left: auto;
+  padding: 0.1rem 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg);
+  background: var(--bg-elevated);
+  border-radius: 999px;
+}
+
+.card-badge-secondary {
+  font-weight: 400;
+  color: var(--muted);
+}

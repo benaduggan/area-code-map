@@ -1,0 +1,246 @@
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
+import { select } from "d3-selection";
+import { zoom, zoomIdentity, type ZoomBehavior, type ZoomTransform } from "d3-zoom";
+import "d3-transition";
+import { INSETS, SHAPES, VIEW_HEIGHT, VIEW_WIDTH, unionBounds } from "../../lib/geo/model";
+import "./AreaCodeMap.css";
+
+export interface AreaCodeMapProps {
+  /** Optional fill color per shape id; undefined falls back to the base fill. */
+  fillFor?: (shapeId: string) => string | undefined;
+  selectedShapeIds?: ReadonlySet<string>;
+  highlightedShapeIds?: ReadonlySet<string>;
+  onSelectShape?: (shapeId: string | null) => void;
+  onHoverShape?: (shapeId: string | null) => void;
+  /** Rendered inside the tooltip for the hovered shape. */
+  renderTooltip?: (shapeId: string) => React.ReactNode;
+}
+
+export interface AreaCodeMapHandle {
+  zoomToShapes: (shapeIds: readonly string[]) => void;
+  resetZoom: () => void;
+  getSvg: () => SVGSVGElement | null;
+}
+
+const MIN_ZOOM = 1;
+const MAX_ZOOM = 12;
+
+export const AreaCodeMap = forwardRef<AreaCodeMapHandle, AreaCodeMapProps>(function AreaCodeMap(
+  { fillFor, selectedShapeIds, highlightedShapeIds, onSelectShape, onHoverShape, renderTooltip },
+  ref,
+) {
+  const svgRef = useRef<SVGSVGElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const zoomRef = useRef<ZoomBehavior<SVGSVGElement, unknown> | null>(null);
+  const [transform, setTransform] = useState<ZoomTransform>(zoomIdentity);
+  const [hovered, setHovered] = useState<string | null>(null);
+  const [pointer, setPointer] = useState<{ x: number; y: number } | null>(null);
+  const dragging = useRef(false);
+
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    const z = zoom<SVGSVGElement, unknown>()
+      .scaleExtent([MIN_ZOOM, MAX_ZOOM])
+      .translateExtent([
+        [-VIEW_WIDTH * 0.5, -VIEW_HEIGHT * 0.5],
+        [VIEW_WIDTH * 1.5, VIEW_HEIGHT * 1.5],
+      ])
+      .filter((event: Event) => {
+        // Let insets stay fixed: ignore gestures that start on them.
+        const target = event.target as Element | null;
+        if (target?.closest(".inset")) return false;
+        // d3's default filter: no right-click, ctrl+wheel allowed.
+        const me = event as MouseEvent;
+        return (!me.ctrlKey || event.type === "wheel") && !me.button;
+      })
+      .on("start", () => {
+        dragging.current = false;
+      })
+      .on("zoom", (event) => {
+        if (event.sourceEvent?.type === "mousemove" || event.sourceEvent?.type === "touchmove") {
+          dragging.current = true;
+        }
+        setTransform(event.transform);
+      });
+    select(svg).call(z);
+    zoomRef.current = z;
+    return () => {
+      select(svg).on(".zoom", null);
+    };
+  }, []);
+
+  const zoomToBounds = useCallback((b: [[number, number], [number, number]]) => {
+    const svg = svgRef.current;
+    const z = zoomRef.current;
+    if (!svg || !z) return;
+    const w = b[1][0] - b[0][0];
+    const h = b[1][1] - b[0][1];
+    const cx = (b[0][0] + b[1][0]) / 2;
+    const cy = (b[0][1] + b[1][1]) / 2;
+    const k = Math.max(
+      MIN_ZOOM,
+      Math.min(MAX_ZOOM, 0.7 / Math.max(w / VIEW_WIDTH, h / VIEW_HEIGHT)),
+    );
+    const t = zoomIdentity.translate(VIEW_WIDTH / 2 - k * cx, VIEW_HEIGHT / 2 - k * cy).scale(k);
+    select(svg).transition().duration(500).call(z.transform, t);
+  }, []);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      zoomToShapes: (ids) => {
+        const b = unionBounds(ids);
+        if (b) zoomToBounds(b);
+      },
+      resetZoom: () => {
+        const svg = svgRef.current;
+        const z = zoomRef.current;
+        if (svg && z) select(svg).transition().duration(400).call(z.transform, zoomIdentity);
+      },
+      getSvg: () => svgRef.current,
+    }),
+    [zoomToBounds],
+  );
+
+  const handleEnter = (id: string) => {
+    setHovered(id);
+    onHoverShape?.(id);
+  };
+  const handleLeave = () => {
+    setHovered(null);
+    setPointer(null);
+    onHoverShape?.(null);
+  };
+  const handleMove = (e: ReactPointerEvent) => {
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    setPointer({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+  };
+  const handleClick = (id: string) => {
+    if (dragging.current) return;
+    onSelectShape?.(id);
+  };
+
+  const byInset = useMemo(() => {
+    const m = new Map<string, typeof SHAPES>();
+    for (const inset of INSETS)
+      m.set(
+        inset.id,
+        SHAPES.filter((s) => s.inset === inset.id),
+      );
+    return m;
+  }, []);
+
+  const classFor = (id: string) =>
+    [
+      "shape",
+      selectedShapeIds?.has(id) ? "is-selected" : "",
+      highlightedShapeIds?.has(id) ? "is-highlighted" : "",
+      hovered === id ? "is-hovered" : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+  const renderShapes = (insetId: string, scale = 1) =>
+    byInset.get(insetId)?.map((s) => {
+      const fill = fillFor?.(s.id);
+      const style = fill ? { fill } : undefined;
+      if (s.tiny) {
+        return (
+          <circle
+            key={s.id}
+            className={classFor(s.id) + " is-marker"}
+            cx={s.centroid[0]}
+            cy={s.centroid[1]}
+            r={4 / scale}
+            style={style}
+            data-shape={s.id}
+            onPointerEnter={() => handleEnter(s.id)}
+            onPointerLeave={handleLeave}
+            onClick={() => handleClick(s.id)}
+          />
+        );
+      }
+      return (
+        <path
+          key={s.id}
+          className={classFor(s.id)}
+          d={s.path}
+          style={style}
+          data-shape={s.id}
+          onPointerEnter={() => handleEnter(s.id)}
+          onPointerLeave={handleLeave}
+          onClick={() => handleClick(s.id)}
+        />
+      );
+    });
+
+  const zoomed = transform.k !== 1 || transform.x !== 0 || transform.y !== 0;
+
+  return (
+    <div className="map-container" ref={containerRef} onPointerMove={handleMove}>
+      <svg
+        ref={svgRef}
+        className="map-svg"
+        viewBox={`0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`}
+        role="img"
+        aria-label="Map of North American area codes"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) onSelectShape?.(null);
+        }}
+      >
+        <g className="main" transform={transform.toString()}>
+          {renderShapes("main", transform.k)}
+        </g>
+        {INSETS.filter((i) => i.id !== "main").map((inset) => (
+          <g key={inset.id} className="inset">
+            <rect
+              className="inset-frame"
+              x={inset.frame.x}
+              y={inset.frame.y}
+              width={inset.frame.width}
+              height={inset.frame.height}
+              rx={4}
+            />
+            <text
+              className="inset-label"
+              x={inset.frame.x + 6}
+              y={inset.frame.y + inset.frame.height - 5}
+            >
+              {inset.label}
+            </text>
+            {renderShapes(inset.id)}
+          </g>
+        ))}
+      </svg>
+      {zoomed && (
+        <button
+          type="button"
+          className="map-reset"
+          onClick={() => {
+            const svg = svgRef.current;
+            const z = zoomRef.current;
+            if (svg && z) select(svg).transition().duration(400).call(z.transform, zoomIdentity);
+          }}
+        >
+          Reset view
+        </button>
+      )}
+      {hovered && pointer && renderTooltip && (
+        <div className="map-tooltip" style={{ left: pointer.x, top: pointer.y }} role="tooltip">
+          {renderTooltip(hovered)}
+        </div>
+      )}
+    </div>
+  );
+});
