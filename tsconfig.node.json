@@ -12,7 +12,7 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "noEmit": true,
-    "types": ["node", "bun"]
+    "types": ["node", "bun", "vitest/globals"]
   },
   "include": ["vite.config.ts", "eslint.config.js", "scripts"]
 }
