@@ -47,10 +47,10 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["favicon.svg", "apple-touch-icon.png"],
       manifest: {
-        name: "Area Code Map",
-        short_name: "Area Codes",
+        name: "Hometowns",
+        short_name: "Hometowns",
         description:
-          "See where the people you know are from. A map of the area codes in your contacts, built entirely in your browser.",
+          "Where your people started. A map of the area codes in your contacts, built entirely in your browser and never uploaded.",
         theme_color: "#d97706",
         background_color: "#fafaf7",
         display: "standalone",

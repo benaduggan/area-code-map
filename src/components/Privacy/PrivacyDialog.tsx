@@ -74,12 +74,14 @@ export function PrivacyDialog({ open, onClose, online }: Props) {
             connection to any other origin. Even a bug could not upload your data.
           </li>
           <li>
-            A share link contains only a count per area code, packed into the part of the URL after
-            the <code>#</code>, which browsers never send to servers.
+            A share link contains only a count per area code, and your own area code if you choose
+            to include it, packed into the part of the URL after the <code>#</code>, which browsers
+            never send to servers.
           </li>
           <li>
-            &ldquo;Remember on this device&rdquo; writes to your browser&rsquo;s local storage only.
-            It never syncs anywhere. &ldquo;Forget everything&rdquo; erases it.
+            &ldquo;Remember on this device&rdquo; writes your per-area-code counts and your own area
+            code to your browser&rsquo;s local storage only. It never syncs anywhere. &ldquo;Forget
+            everything&rdquo; erases it.
           </li>
         </ul>
 

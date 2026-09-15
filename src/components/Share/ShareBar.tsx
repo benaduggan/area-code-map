@@ -9,14 +9,18 @@ interface Props {
   cards: { value: number; label: string }[];
   legend: { color: string; label: string }[];
   getExportRoot: () => HTMLElement | null;
+  /** The user's own area code, offered as an opt-in part of the link and image. */
+  home?: string | null;
 }
 
-export function ShareBar({ counts, caption, cards, legend, getExportRoot }: Props) {
+export function ShareBar({ counts, caption, cards, legend, getExportRoot, home }: Props) {
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [includeHome, setIncludeHome] = useState(true);
   const ref = useRef<HTMLDialogElement>(null);
-  const url = shareUrlFor(counts);
+  const sharedHome = home && includeHome ? home : null;
+  const url = shareUrlFor(counts, sharedHome);
 
   useEffect(() => {
     const d = ref.current;
@@ -47,7 +51,7 @@ export function ShareBar({ counts, caption, cards, legend, getExportRoot }: Prop
       const cs = getComputedStyle(document.documentElement);
       const v = (name: string, fallback: string) => cs.getPropertyValue(name).trim() || fallback;
       const blob = await mapToPngBlob(root, {
-        title: "Area Code Map",
+        title: "Hometowns",
         caption,
         cards,
         legend,
@@ -59,8 +63,9 @@ export function ShareBar({ counts, caption, cards, legend, getExportRoot }: Prop
           text: v("--fg", "#000000"),
           muted: v("--muted", "#666666"),
         },
+        exclude: sharedHome ? undefined : '[data-home="mine"]',
       });
-      downloadBlob(blob, "area-code-map.png");
+      downloadBlob(blob, "hometowns.png");
       flash("Image downloaded.");
     } catch (e) {
       flash(e instanceof Error ? e.message : "Could not create the image.");
@@ -109,6 +114,19 @@ export function ShareBar({ counts, caption, cards, legend, getExportRoot }: Prop
             your map and can compare it with their own.
           </p>
 
+          {home && (
+            <label className="share-option">
+              <input
+                type="checkbox"
+                checked={includeHome}
+                onChange={(e) => setIncludeHome(e.target.checked)}
+              />
+              <span>
+                Show that <strong>{home}</strong> is my home area code
+              </span>
+            </label>
+          )}
+
           <h3>Link</h3>
           <input
             className="share-url"
@@ -138,6 +156,7 @@ export function ShareBar({ counts, caption, cards, legend, getExportRoot }: Prop
           <p className="skipped-note">
             The image shows the whole map with your stats and legend on it, rendered in your
             browser.
+            {home && !includeHome && " Your home marker is left out."}
           </p>
           {status && (
             <p className="share-status" role="status">

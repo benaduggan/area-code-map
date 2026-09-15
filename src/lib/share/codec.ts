@@ -1,18 +1,26 @@
 /**
- * Share-link payload: per-area-code counts and nothing else.
+ * Share-link payload: per-area-code counts, optionally the sharer's own
+ * (home) area code, and nothing else.
  *
- * Format (before base64url): [version=1] then, for each (npa, count) pair
- * sorted by NPA: varint(delta of the NPA's index in the sorted NPA table
- * from the previous pair) varint(count). Two bytes per pair in the common
- * case, so a hundred area codes is well under 300 characters.
+ * v1 (before base64url): [1] then, for each (npa, count) pair sorted by NPA:
+ * varint(delta of the NPA's index in the sorted NPA table from the previous
+ * pair) varint(count). Two bytes per pair in the common case, so a hundred
+ * area codes is well under 300 characters.
+ *
+ * v2 adds one varint after the version byte: the home NPA's index plus one,
+ * or 0 for none. Links without a home code are still written as v1 so they
+ * look exactly as they always have.
  */
 import { areaCodes } from "../areacodes";
 
-const VERSION = 1;
-const PREFIX = "v1.";
-
 const npaList = areaCodes.map((a) => a.npa); // sorted by NPA already
 const indexByNpa = new Map(npaList.map((npa, i) => [npa, i]));
+
+export interface SharePayload {
+  counts: Map<string, number>;
+  /** The sharer's own area code, when they chose to include it. */
+  home: string | null;
+}
 
 function writeVarint(out: number[], value: number): void {
   let v = value >>> 0;
@@ -52,27 +60,45 @@ function fromBase64Url(text: string): Uint8Array {
   return out;
 }
 
-export function encodeCounts(counts: ReadonlyMap<string, number>): string {
+export function encodeShare(counts: ReadonlyMap<string, number>, home?: string | null): string {
   const pairs = [...counts.entries()]
     .filter(([npa, n]) => indexByNpa.has(npa) && Number.isInteger(n) && n > 0)
     .map(([npa, n]) => [indexByNpa.get(npa)!, n] as const)
     .sort((a, b) => a[0] - b[0]);
-  const out: number[] = [VERSION];
+  const homeIdx = home ? indexByNpa.get(home) : undefined;
+  const version = homeIdx === undefined ? 1 : 2;
+  const out: number[] = [version];
+  if (version === 2) writeVarint(out, homeIdx! + 1);
   let prev = 0;
   for (const [idx, n] of pairs) {
     writeVarint(out, idx - prev);
     writeVarint(out, n);
     prev = idx;
   }
-  return PREFIX + toBase64Url(Uint8Array.from(out));
+  return `v${version}.` + toBase64Url(Uint8Array.from(out));
 }
 
-export function decodeCounts(text: string): Map<string, number> | null {
-  if (!text.startsWith(PREFIX)) return null;
+/** Counts only; kept for callers that never include a home code. */
+export function encodeCounts(counts: ReadonlyMap<string, number>): string {
+  return encodeShare(counts, null);
+}
+
+export function decodeShare(text: string): SharePayload | null {
+  const m = /^v([12])\.(.*)$/s.exec(text);
+  if (!m) return null;
+  const version = Number(m[1]);
   try {
-    const bytes = fromBase64Url(text.slice(PREFIX.length));
-    if (bytes[0] !== VERSION) return null;
+    const bytes = fromBase64Url(m[2] ?? "");
+    if (bytes[0] !== version) return null;
     const pos = { i: 1 };
+    let home: string | null = null;
+    if (version === 2) {
+      const h = readVarint(bytes, pos);
+      if (h > 0) {
+        home = npaList[h - 1] ?? null;
+        if (!home) return null;
+      }
+    }
     const counts = new Map<string, number>();
     let idx = 0;
     while (pos.i < bytes.length) {
@@ -82,19 +108,27 @@ export function decodeCounts(text: string): Map<string, number> | null {
       if (!npa || n <= 0) return null;
       counts.set(npa, n);
     }
-    return counts.size ? counts : null;
+    return counts.size ? { counts, home } : null;
   } catch {
     return null;
   }
 }
 
-/** Read a share payload from a URL hash like "#v1.AbC…". */
-export function countsFromHash(hash: string): Map<string, number> | null {
-  const h = hash.startsWith("#") ? hash.slice(1) : hash;
-  return h ? decodeCounts(h) : null;
+export function decodeCounts(text: string): Map<string, number> | null {
+  return decodeShare(text)?.counts ?? null;
 }
 
-/** Absolute URL for the current page carrying the counts in its hash. */
-export function shareUrlFor(counts: ReadonlyMap<string, number>): string {
-  return `${location.origin}${location.pathname}#${encodeCounts(counts)}`;
+/** Read a share payload from a URL hash like "#v1.AbC…". */
+export function shareFromHash(hash: string): SharePayload | null {
+  const h = hash.startsWith("#") ? hash.slice(1) : hash;
+  return h ? decodeShare(h) : null;
+}
+
+export function countsFromHash(hash: string): Map<string, number> | null {
+  return shareFromHash(hash)?.counts ?? null;
+}
+
+/** Absolute URL for the current page carrying the payload in its hash. */
+export function shareUrlFor(counts: ReadonlyMap<string, number>, home?: string | null): string {
+  return `${location.origin}${location.pathname}#${encodeShare(counts, home)}`;
 }

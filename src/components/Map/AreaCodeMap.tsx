@@ -16,10 +16,12 @@ import {
   SHAPES,
   VIEW_HEIGHT,
   VIEW_WIDTH,
+  getShape,
   unionBounds,
   type Inset,
   type ShapeGeometry,
 } from "../../lib/geo/model";
+import { HOUSE_PATH } from "../Icons";
 import "./AreaCodeMap.css";
 
 export interface AreaCodeMapProps {
@@ -29,6 +31,10 @@ export interface AreaCodeMapProps {
   hatchFor?: (shapeId: string) => boolean;
   selectedShapeIds?: ReadonlySet<string>;
   highlightedShapeIds?: ReadonlySet<string>;
+  /** The user's own area code: outlined, with a house marker on the first shape. */
+  homeShapeIds?: readonly string[];
+  /** A shared map's home, drawn as a hollow marker so both can show at once. */
+  theirHomeShapeIds?: readonly string[];
   onSelectShape?: (shapeId: string | null) => void;
   onHoverShape?: (shapeId: string | null) => void;
   /** Rendered inside the tooltip for the hovered shape. */
@@ -51,6 +57,8 @@ export const AreaCodeMap = forwardRef<AreaCodeMapHandle, AreaCodeMapProps>(funct
     hatchFor,
     selectedShapeIds,
     highlightedShapeIds,
+    homeShapeIds,
+    theirHomeShapeIds,
     onSelectShape,
     onHoverShape,
     renderTooltip,
@@ -159,11 +167,14 @@ export const AreaCodeMap = forwardRef<AreaCodeMapHandle, AreaCodeMapProps>(funct
     return m;
   }, []);
 
+  const homeSet = useMemo(() => new Set(homeShapeIds), [homeShapeIds]);
+
   const classFor = (id: string) =>
     [
       "shape",
       selectedShapeIds?.has(id) ? "is-selected" : "",
       highlightedShapeIds?.has(id) ? "is-highlighted" : "",
+      homeSet.has(id) ? "is-home" : "",
       hovered === id ? "is-hovered" : "",
     ]
       .filter(Boolean)
@@ -206,6 +217,32 @@ export const AreaCodeMap = forwardRef<AreaCodeMapHandle, AreaCodeMapProps>(funct
       );
     });
 
+  /**
+   * A house at the centroid of the first shape of a home code, drawn after
+   * the shapes so it sits on top. Scaled by 1/k so it stays the same size on
+   * screen at any zoom. Pointer events pass through to the shape beneath.
+   */
+  const renderHome = (insetId: string, ids: readonly string[] | undefined, mine: boolean) => {
+    const shape = ids?.[0] ? getShape(ids[0]) : undefined;
+    if (!shape || shape.inset !== insetId) return null;
+    const k = insetId === "main" ? transform.k : 1;
+    const [cx, cy] = shape.centroid;
+    return (
+      <g
+        className={"home-marker" + (mine ? "" : " is-theirs")}
+        transform={`translate(${cx} ${cy}) scale(${1 / k})`}
+        data-home={mine ? "mine" : "theirs"}
+      >
+        <circle className="home-marker-disc" r={9} />
+        <path
+          className="home-marker-house"
+          d={HOUSE_PATH}
+          transform="translate(-6 -6) scale(0.5)"
+        />
+      </g>
+    );
+  };
+
   const zoomed = transform.k !== 1 || transform.x !== 0 || transform.y !== 0;
 
   const zoomBy = (factor: number) => {
@@ -241,6 +278,8 @@ export const AreaCodeMap = forwardRef<AreaCodeMapHandle, AreaCodeMapProps>(funct
         {inset.label}
       </text>
       {renderShapes(inset.id)}
+      {renderHome(inset.id, theirHomeShapeIds, false)}
+      {renderHome(inset.id, homeShapeIds, true)}
     </svg>
   );
   const inset = (id: string) => INSETS.find((i) => i.id === id)!;
@@ -270,6 +309,8 @@ export const AreaCodeMap = forwardRef<AreaCodeMapHandle, AreaCodeMapProps>(funct
         </defs>
         <g className="main" transform={transform.toString()}>
           {renderShapes("main", transform.k)}
+          {renderHome("main", theirHomeShapeIds, false)}
+          {renderHome("main", homeShapeIds, true)}
         </g>
       </svg>
 

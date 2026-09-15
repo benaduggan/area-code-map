@@ -16,9 +16,11 @@ interface Props {
   onImport: (result: ImportResult) => void;
   /** Shorter version shown under existing results. */
   compact?: boolean;
+  /** Buttons only: the welcome screen supplies its own heading and lead. */
+  bare?: boolean;
 }
 
-export function ImportPanel({ onImport, compact = false }: Props) {
+export function ImportPanel({ onImport, compact = false, bare = false }: Props) {
   const [pasteOpen, setPasteOpen] = useState(false);
   const [pasted, setPasted] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -82,9 +84,11 @@ export function ImportPanel({ onImport, compact = false }: Props) {
   };
 
   return (
-    <section className="import">
-      <h2 className="panel-title">{compact ? "Add more contacts" : "Light up your map"}</h2>
-      {!compact && (
+    <section className={"import" + (bare ? " is-bare" : "")}>
+      {!bare && (
+        <h2 className="panel-title">{compact ? "Add more contacts" : "Light up your map"}</h2>
+      )}
+      {!compact && !bare && (
         <p className="import-lead">
           Add the phone numbers in your contacts. They are read right here in your browser and never
           uploaded.

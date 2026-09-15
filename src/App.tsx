@@ -11,7 +11,7 @@ import { codesOnShape, countsByShape, primaryCodeOnShape, shapesForCode } from "
 import { searchAreaCodes } from "./lib/search";
 import { DARK_RAMP, LIGHT_RAMP, makeCountScale } from "./lib/choropleth";
 import { mergeResults, type ImportResult } from "./lib/contacts";
-import { countsFromHash } from "./lib/share/codec";
+import { shareFromHash, type SharePayload } from "./lib/share/codec";
 import { COMPARE_DARK, COMPARE_LABELS, COMPARE_LIGHT, compareCounts } from "./lib/compare";
 import { computeStats } from "./lib/stats";
 import { getAreaCode } from "./lib/areacodes";
@@ -19,10 +19,15 @@ import "./components/Share/ShareBar.css";
 import {
   clearStored,
   isRememberEnabled,
+  loadHome,
   loadResult,
+  saveHome,
   saveResult,
   setRememberEnabled,
 } from "./lib/contacts/store";
+import { Welcome } from "./components/Welcome/Welcome";
+import { HomeRow } from "./components/Home/HomeRow";
+import { describeHome } from "./lib/home";
 import { PrivacyDialog } from "./components/Privacy/PrivacyDialog";
 import { useTheme, type Theme } from "./lib/useTheme";
 import { GitHubIcon } from "./components/Icons";
@@ -43,8 +48,8 @@ function restoredResult(): ImportResult | null {
   return loadResult();
 }
 
-function sharedFromLocation(): Map<string, number> | null {
-  return typeof location === "undefined" ? null : countsFromHash(location.hash);
+function sharedFromLocation(): SharePayload | null {
+  return typeof location === "undefined" ? null : shareFromHash(location.hash);
 }
 
 const NEXT_THEME: Record<Theme, Theme> = { system: "light", light: "dark", dark: "system" };
@@ -58,7 +63,12 @@ export function App() {
   const [selectedCode, setSelectedCode] = useState<AreaCode | null>(null);
   const [result, setResult] = useState<ImportResult | null>(() => restoredResult());
   const [remember, setRemember] = useState(() => isRememberEnabled());
-  const [shared, setShared] = useState<Map<string, number> | null>(() => sharedFromLocation());
+  const [home, setHome] = useState<string | null>(() => loadHome());
+  const [shared, setShared] = useState<SharePayload | null>(() => sharedFromLocation());
+  // The welcome screen shows until something is remembered, shared, or
+  // skipped. Typing a home code on it must not dismiss it, so this keys off
+  // what was remembered when the page loaded, not the live home state.
+  const [skippedWelcome, setSkippedWelcome] = useState(() => loadHome() !== null);
   const { theme, setTheme, dark } = useTheme();
   const online = useOnline();
   const [privacyOpen, setPrivacyOpen] = useState(false);
@@ -94,10 +104,10 @@ export function App() {
 
   const comparing = Boolean(shared && result);
   const comparison = useMemo(
-    () => (shared && result ? compareCounts(result.counts, shared) : null),
+    () => (shared && result ? compareCounts(result.counts, shared.counts) : null),
     [shared, result],
   );
-  const sharedResult = useMemo(() => (shared ? resultFromCounts(shared) : null), [shared]);
+  const sharedResult = useMemo(() => (shared ? resultFromCounts(shared.counts) : null), [shared]);
   const sharedStats = useMemo(
     () => (sharedResult ? computeStats(sharedResult) : null),
     [sharedResult],
@@ -106,6 +116,10 @@ export function App() {
   useEffect(() => {
     if (result && remember) saveResult(result);
   }, [result, remember]);
+
+  useEffect(() => {
+    if (remember) saveHome(home);
+  }, [home, remember]);
 
   const results = useMemo(() => searchAreaCodes(query), [query]);
   const showingSearch = query.trim().length > 0;
@@ -173,15 +187,21 @@ export function App() {
 
   const forget = () => {
     setResult(null);
+    setHome(null);
     clearStored();
     setSelectedCode(null);
     setSelectedShape(null);
+    setSkippedWelcome(false);
   };
 
   const handleRemember = (on: boolean) => {
     setRemember(on);
-    setRememberEnabled(on, result);
+    setRememberEnabled(on, result, home);
   };
+
+  const homeShapes = useMemo(() => (home ? shapesForCode(home) : []), [home]);
+  const theirHomeShapes = useMemo(() => (shared?.home ? shapesForCode(shared.home) : []), [shared]);
+  const homeShapeSet = useMemo(() => new Set(homeShapes), [homeShapes]);
 
   const shapeCodes = selectedShape ? codesOnShape(selectedShape) : [];
 
@@ -191,19 +211,32 @@ export function App() {
         {comparing ? (
           <>
             Comparing with a shared map of <strong>{sharedResult.summary.nanp}</strong> numbers in{" "}
-            <strong>{shared.size}</strong> area codes.
+            <strong>{shared.counts.size}</strong> area codes.
+            {shared.home && (
+              <>
+                {" "}
+                They&rsquo;re from <strong>{shared.home}</strong>.
+              </>
+            )}
           </>
         ) : (
           <>
             You&rsquo;re viewing someone&rsquo;s shared map:{" "}
-            <strong>{sharedResult.summary.nanp}</strong> numbers in <strong>{shared.size}</strong>{" "}
-            area codes
+            <strong>{sharedResult.summary.nanp}</strong> numbers in{" "}
+            <strong>{shared.counts.size}</strong> area codes
             {sharedStats.top && (
               <>
                 , mostly <strong>{sharedStats.top.npa}</strong> ({sharedStats.top.regionName})
               </>
             )}
-            . Add your own contacts below to compare.
+            .
+            {shared.home && (
+              <>
+                {" "}
+                They&rsquo;re from <strong>{shared.home}</strong> ({describeHome(shared.home)}).
+              </>
+            )}{" "}
+            Add yours below to compare.
           </>
         )}
       </p>
@@ -214,14 +247,15 @@ export function App() {
   );
 
   const badgeFor = (npa: string) =>
-    result ? result.counts.get(npa) : shared ? shared.get(npa) : undefined;
+    result ? result.counts.get(npa) : shared ? shared.counts.get(npa) : undefined;
+
+  const showWelcome = !result && !shared && !skippedWelcome;
 
   return (
     <div className="app">
       <header className="app-header">
         <div className="title-block">
-          <h1>Area Code Map</h1>
-          <p className="tagline">See where the people you know are from.</p>
+          <h1>Hometowns</h1>
         </div>
         <div className="header-links">
           <button
@@ -253,141 +287,169 @@ export function App() {
       </header>
       <PrivacyDialog open={privacyOpen} onClose={() => setPrivacyOpen(false)} online={online} />
 
-      <div className="layout">
-        <aside className="sidebar" ref={sidebarRef}>
-          <SearchBox value={query} onChange={setQuery} />
-          {!showingSearch && !selectedShape && sharedBanner}
+      {showWelcome ? (
+        <Welcome
+          home={home}
+          onHomeChange={setHome}
+          remember={remember}
+          onRememberChange={handleRemember}
+          onImport={(r) => {
+            handleImport(r);
+            setSkippedWelcome(true);
+          }}
+          onSkip={() => setSkippedWelcome(true)}
+          onOpenPrivacy={() => setPrivacyOpen(true)}
+        />
+      ) : (
+        <div className="layout">
+          <aside className="sidebar" ref={sidebarRef}>
+            <SearchBox value={query} onChange={setQuery} />
+            {!showingSearch && !selectedShape && sharedBanner}
 
-          {showingSearch ? (
-            <section className="panel" aria-live="polite">
-              <h2 className="panel-title">
-                {results.length === 0
-                  ? "No matches"
-                  : `${results.length} area code${results.length === 1 ? "" : "s"}`}
-              </h2>
-              <div className="card-list">
-                {results.map((code) => (
-                  <AreaCodeCard
-                    key={code.npa}
-                    code={code}
-                    selected={selectedCode?.npa === code.npa}
-                    onSelect={selectCode}
-                    badge={badgeFor(code.npa)}
-                  />
-                ))}
+            {showingSearch ? (
+              <section className="panel" aria-live="polite">
+                <h2 className="panel-title">
+                  {results.length === 0
+                    ? "No matches"
+                    : `${results.length} area code${results.length === 1 ? "" : "s"}`}
+                </h2>
+                <div className="card-list">
+                  {results.map((code) => (
+                    <AreaCodeCard
+                      key={code.npa}
+                      code={code}
+                      selected={selectedCode?.npa === code.npa}
+                      onSelect={selectCode}
+                      badge={badgeFor(code.npa)}
+                    />
+                  ))}
+                </div>
+              </section>
+            ) : selectedShape && !selectedCode ? (
+              <section className="panel">
+                <div className="panel-head">
+                  <h2 className="panel-title">{shapeCodes[0]?.regionName ?? "Region"}</h2>
+                  <button type="button" className="link" onClick={() => selectShape(null)}>
+                    Back
+                  </button>
+                </div>
+                <div className="card-list">
+                  {shapeCodes.map((code) => (
+                    <AreaCodeCard
+                      key={code.npa}
+                      code={code}
+                      onSelect={selectCode}
+                      badge={badgeFor(code.npa)}
+                      badgeSecondary={comparing ? (shared!.counts.get(code.npa) ?? 0) : undefined}
+                      extra={result ? <NameList result={result} npa={code.npa} /> : undefined}
+                    />
+                  ))}
+                </div>
+              </section>
+            ) : result ? (
+              <div className="panel">
+                <ResultsPanel
+                  result={result}
+                  selectedCode={selectedCode}
+                  onSelectCode={selectCode}
+                  onForget={forget}
+                  remember={remember}
+                  onRememberChange={handleRemember}
+                  getExportRoot={() => mapRef.current?.getExportRoot() ?? null}
+                  addMore={<ImportPanel onImport={handleImport} compact />}
+                  scaleLegend={
+                    scale ? scale.labels.map((label, i) => ({ color: ramp[i]!, label })) : []
+                  }
+                  compareColors={compareColors}
+                  comparison={
+                    comparison && shared ? { theirs: shared.counts, result: comparison } : null
+                  }
+                  home={home}
+                  onHomeChange={setHome}
+                />
               </div>
-            </section>
-          ) : selectedShape && !selectedCode ? (
-            <section className="panel">
-              <div className="panel-head">
-                <h2 className="panel-title">{shapeCodes[0]?.regionName ?? "Region"}</h2>
-                <button type="button" className="link" onClick={() => selectShape(null)}>
-                  Back
-                </button>
+            ) : shared && sharedResult ? (
+              <div className="panel">
+                <HomeRow home={home} onChange={setHome} />
+                <ImportPanel onImport={handleImport} compact />
+                <h2 className="panel-title">Their area codes</h2>
+                <div className="card-list">
+                  {[...shared.counts.entries()]
+                    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+                    .map(([npa, count]) => {
+                      const code = getAreaCode(npa);
+                      return code ? (
+                        <AreaCodeCard key={npa} code={code} onSelect={selectCode} badge={count} />
+                      ) : null;
+                    })}
+                </div>
               </div>
-              <div className="card-list">
-                {shapeCodes.map((code) => (
-                  <AreaCodeCard
-                    key={code.npa}
-                    code={code}
-                    onSelect={selectCode}
-                    badge={badgeFor(code.npa)}
-                    badgeSecondary={comparing ? (shared!.get(code.npa) ?? 0) : undefined}
-                    extra={result ? <NameList result={result} npa={code.npa} /> : undefined}
-                  />
-                ))}
+            ) : (
+              <div className="panel">
+                <HomeRow home={home} onChange={setHome} />
+                <ImportPanel onImport={handleImport} />
+                <p className="hint">Or search above, or click any region on the map.</p>
               </div>
-            </section>
-          ) : result ? (
-            <div className="panel">
-              <ResultsPanel
-                result={result}
-                selectedCode={selectedCode}
-                onSelectCode={selectCode}
-                onForget={forget}
-                remember={remember}
-                onRememberChange={handleRemember}
-                getExportRoot={() => mapRef.current?.getExportRoot() ?? null}
-                addMore={<ImportPanel onImport={handleImport} compact />}
-                scaleLegend={
-                  scale ? scale.labels.map((label, i) => ({ color: ramp[i]!, label })) : []
-                }
-                compareColors={compareColors}
-                comparison={comparison && shared ? { theirs: shared, result: comparison } : null}
+            )}
+            {showTop && (
+              <button type="button" className="to-top" onClick={scrollToTop}>
+                ↑ Top
+              </button>
+            )}
+          </aside>
+
+          <main className="map-area">
+            <AreaCodeMap
+              ref={mapRef}
+              fillFor={fillFor}
+              hatchFor={comparison ? (id) => comparison.shapeClass.get(id) === "both" : undefined}
+              selectedShapeIds={selectedShapes}
+              highlightedShapeIds={highlighted}
+              homeShapeIds={homeShapes}
+              theirHomeShapeIds={theirHomeShapes}
+              onSelectShape={selectShape}
+              renderTooltip={(shapeId) => {
+                const primary = primaryCodeOnShape(shapeId);
+                if (!primary) return shapeId;
+                const n = shapeCounts?.get(shapeId);
+                const cls = comparison?.shapeClass.get(shapeId);
+                return (
+                  <>
+                    <strong>{overlayLabel(primary)}</strong>
+                    <br />
+                    {primary.regionName}
+                    {cls
+                      ? ` · ${COMPARE_LABELS[cls]}`
+                      : n
+                        ? ` · ${n} ${n === 1 ? "number" : "numbers"}`
+                        : ""}
+                    {homeShapeSet.has(shapeId) && " · your home"}
+                  </>
+                );
+              }}
+            />
+            {comparison ? (
+              <Legend
+                label="Compare legend"
+                items={(["mine", "both", "theirs"] as const).map((c) => ({
+                  label: COMPARE_LABELS[c],
+                  color: compareColors[c],
+                  hatched: c === "both",
+                }))}
+                home={homeShapes.length > 0}
+                theirHome={theirHomeShapes.length > 0}
               />
-            </div>
-          ) : shared && sharedResult ? (
-            <div className="panel">
-              <ImportPanel onImport={handleImport} compact />
-              <h2 className="panel-title">Their area codes</h2>
-              <div className="card-list">
-                {[...shared.entries()]
-                  .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
-                  .map(([npa, count]) => {
-                    const code = getAreaCode(npa);
-                    return code ? (
-                      <AreaCodeCard key={npa} code={code} onSelect={selectCode} badge={count} />
-                    ) : null;
-                  })}
-              </div>
-            </div>
-          ) : (
-            <div className="panel">
-              <ImportPanel onImport={handleImport} />
-              <p className="hint">Or search above, or click any region on the map.</p>
-            </div>
-          )}
-          {showTop && (
-            <button type="button" className="to-top" onClick={scrollToTop}>
-              ↑ Top
-            </button>
-          )}
-        </aside>
-
-        <main className="map-area">
-          <AreaCodeMap
-            ref={mapRef}
-            fillFor={fillFor}
-            hatchFor={comparison ? (id) => comparison.shapeClass.get(id) === "both" : undefined}
-            selectedShapeIds={selectedShapes}
-            highlightedShapeIds={highlighted}
-            onSelectShape={selectShape}
-            renderTooltip={(shapeId) => {
-              const primary = primaryCodeOnShape(shapeId);
-              if (!primary) return shapeId;
-              const n = shapeCounts?.get(shapeId);
-              const cls = comparison?.shapeClass.get(shapeId);
-              return (
-                <>
-                  <strong>{overlayLabel(primary)}</strong>
-                  <br />
-                  {primary.regionName}
-                  {cls
-                    ? ` · ${COMPARE_LABELS[cls]}`
-                    : n
-                      ? ` · ${n} ${n === 1 ? "number" : "numbers"}`
-                      : ""}
-                </>
-              );
-            }}
-          />
-          {comparison ? (
-            <div className="legend" aria-label="Compare legend">
-              {(["mine", "both", "theirs"] as const).map((c) => (
-                <span key={c} className="legend-item">
-                  <span
-                    className={"legend-swatch" + (c === "both" ? " is-hatched" : "")}
-                    style={{ background: compareColors[c] }}
-                  />
-                  {COMPARE_LABELS[c]}
-                </span>
-              ))}
-            </div>
-          ) : (
-            scale && <Legend scale={scale} ramp={ramp} />
-          )}
-        </main>
-      </div>
+            ) : (
+              <Legend
+                scale={scale}
+                ramp={ramp}
+                home={homeShapes.length > 0}
+                theirHome={theirHomeShapes.length > 0}
+              />
+            )}
+          </main>
+        </div>
+      )}
 
       <footer className="app-footer">
         <span>

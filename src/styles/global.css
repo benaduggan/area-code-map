@@ -14,6 +14,7 @@
   --map-stroke: #ffffff;
   --map-hover: #c7c3b8;
   --map-highlight: #0ea5e9;
+  --home-theirs: #2a78d6;
   --danger: #b42318;
   --ok: #1a7f37;
   font-family:
@@ -63,6 +64,7 @@
   --map-stroke: #0d1117;
   --map-hover: #3d4653;
   --map-highlight: #38bdf8;
+  --home-theirs: #3987e5;
   --danger: #f97066;
   --ok: #3fb950;
 }

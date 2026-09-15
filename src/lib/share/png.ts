@@ -24,6 +24,8 @@ export interface PngOptions {
   cards: { value: number; label: string }[];
   legend: { color: string; label: string }[];
   colors: PngColors;
+  /** Selector for elements to leave out of the image, e.g. a home marker. */
+  exclude?: string;
 }
 
 interface Piece {
@@ -46,7 +48,7 @@ export async function mapToPngBlob(root: HTMLElement, options: PngOptions): Prom
   try {
     for (const svg of Array.from(root.querySelectorAll<SVGSVGElement>("svg"))) {
       const rect = svg.getBoundingClientRect();
-      const clone = inlineStyles(svg);
+      const clone = inlineStyles(svg, options.exclude);
       const url = URL.createObjectURL(
         new Blob([new XMLSerializer().serializeToString(clone)], {
           type: "image/svg+xml;charset=utf-8",
@@ -84,7 +86,7 @@ export async function mapToPngBlob(root: HTMLElement, options: PngOptions): Prom
     const titleWidth = ctx.measureText(options.title).width;
     ctx.fillStyle = c.muted;
     ctx.font = `400 13px ${FONT}`;
-    ctx.fillText("See where the people you know are from.", 16 + titleWidth + 14, headerHeight / 2);
+    ctx.fillText("Where your people started.", 16 + titleWidth + 14, headerHeight / 2);
 
     // Stat cards, top-left of the map (open ocean in this projection)
     const cardH = 48;
@@ -145,7 +147,7 @@ export async function mapToPngBlob(root: HTMLElement, options: PngOptions): Prom
 }
 
 /** Clone an SVG with computed styles inlined and the main group reset to the home view. */
-function inlineStyles(svg: SVGSVGElement): SVGSVGElement {
+function inlineStyles(svg: SVGSVGElement, exclude?: string): SVGSVGElement {
   const clone = svg.cloneNode(true) as SVGSVGElement;
   const originals = svg.querySelectorAll<SVGElement>("path, circle, rect, text, line");
   const copies = clone.querySelectorAll<SVGElement>("path, circle, rect, text, line");
@@ -166,6 +168,14 @@ function inlineStyles(svg: SVGSVGElement): SVGSVGElement {
     copy.style.transition = "";
   });
   clone.querySelector(".main")?.setAttribute("transform", "");
+  if (exclude) clone.querySelectorAll(exclude).forEach((el) => el.remove());
+  // Home markers are scaled by 1/zoom on screen; the export shows the home view.
+  clone.querySelectorAll<SVGElement>(".home-marker").forEach((el) => {
+    el.setAttribute(
+      "transform",
+      (el.getAttribute("transform") ?? "").replace(/scale\([^)]*\)/, ""),
+    );
+  });
   clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
   const rect = svg.getBoundingClientRect();
   clone.setAttribute("width", String(Math.max(1, Math.round(rect.width))));

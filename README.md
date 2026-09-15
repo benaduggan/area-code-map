@@ -1,10 +1,12 @@
-# Area Code Map
+# Hometowns
 
-See where the people you know are from.
+Where your people started.
 
-Drop in your contacts and watch North America light up with the area codes of
-the people you know. Everything runs in your browser. Nothing is uploaded.
-Share the picture, not the phone numbers.
+Most people keep the number they got as a teenager, so an area code says
+where someone started, not where they ended up. Drop in your contacts and
+watch North America light up with the hometowns of the people you know.
+Everything runs in your browser. Nothing is uploaded. Share the picture, not
+the phone numbers.
 
 **Live site:** https://benaduggan.github.io/area-code-map/
 
@@ -12,14 +14,17 @@ Share the picture, not the phone numbers.
 
 - **Interactive map** of every in-service area code in the US, Canada, and the
   Caribbean, with search by number, city, state, or province.
+- **Your own area code**: type the three digits and your home is outlined and
+  marked on the map. Your stats are framed around it: how many of your people
+  share it, and who is farthest from it.
 - **Import your contacts** four ways: pick them from your phone (Chrome on
   Android, Safari on iOS), upload a vCard or CSV export, or paste anything with
   phone numbers in it.
 - **Your map**: a choropleth of how many numbers you have per area code, with
   the names behind each region one click away, plus a few stats (most common,
   oldest, newest code you know).
-- **Share**: copy a link that encodes only your per-area-code counts, or
-  download the map as an image. Friends who open your link can add their own
+- **Share**: copy a link that encodes only your per-area-code counts (and
+  your own area code, if you tick the box), or download the map as an image. Friends who open your link can add their own
   contacts and see a side-by-side comparison.
 - **Works offline** once loaded, as an installable web app.
 
@@ -28,8 +33,9 @@ Share the picture, not the phone numbers.
 - This is a static site. There is no server, no database, and no account.
 - Contacts are parsed in your browser tab. Raw phone numbers and names are held
   in memory only and are gone when you close the tab.
-- The only thing the app keeps (and only if you tick the box) is a count per
-  area code. That is also the only thing a share link contains.
+- The only things the app keeps (and only if you tick the box) are a count per
+  area code and your own area code. Those are also the only things a share
+  link can contain.
 - The production page ships a Content-Security-Policy that forbids the browser
   from connecting anywhere but the page's own origin, and the test suite
   includes an end-to-end check that fails if any request leaves the page

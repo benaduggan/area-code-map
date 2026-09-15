@@ -67,7 +67,10 @@ page.on("pageerror", (e) => pageErrors.push(String(e)));
 
 await page.goto(BASE, { waitUntil: "networkidle" });
 
-// Import via paste.
+// The welcome screen: set a home area code, then import via paste.
+await page.waitForSelector("text=Where your people started");
+await page.fill("input[inputmode=numeric]", "919");
+await page.waitForSelector("text=Raleigh, North Carolina");
 await page.click("text=Paste numbers");
 await page.fill(
   "textarea",
@@ -78,6 +81,8 @@ await page.waitForSelector("text=Your map");
 
 const fill919 = await page.getAttribute('[data-shape="919"]', "style");
 if (!fill919?.includes("fill")) fail("919 was not painted after import");
+if (!(await page.$('[data-home="mine"]'))) fail("home marker was not drawn");
+await page.waitForSelector("text=Farthest from home");
 
 // Search, select, zoom.
 await page.fill("input[type=search]", "raleigh");
@@ -98,7 +103,7 @@ if (
 ) {
   fail(`unexpected share URL ${shareUrl}`);
 }
-if (!parsed.hash.startsWith("#v1.")) fail(`share URL has no v1 hash payload: ${shareUrl}`);
+if (!parsed.hash.startsWith("#v2.")) fail(`share URL has no v2 hash payload: ${shareUrl}`);
 
 // Opening the link in a fresh page shows the shared map.
 const viewer = await context.newPage();
@@ -114,6 +119,8 @@ viewer.on("request", (req) => {
 });
 await viewer.goto(shareUrl, { waitUntil: "networkidle" });
 await viewer.waitForSelector("text=shared map");
+await viewer.waitForSelector("text=They’re from 919");
+if (!(await viewer.$('[data-home="theirs"]'))) fail("shared home marker was not drawn");
 await viewer.close();
 
 // PNG export triggers a download; use the button outside the dialog.
@@ -122,7 +129,7 @@ const [download] = await Promise.all([
   page.waitForEvent("download", { timeout: 15000 }),
   page.click(".share > button:has-text('Download image')"),
 ]);
-if (download.suggestedFilename() !== "area-code-map.png")
+if (download.suggestedFilename() !== "hometowns.png")
   fail(`unexpected download name ${download.suggestedFilename()}`);
 const path = await download.path();
 if (!path) fail("download had no file");

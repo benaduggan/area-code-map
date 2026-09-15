@@ -35,3 +35,25 @@
 .legend-swatch.is-hatched {
   background-image: repeating-linear-gradient(45deg, transparent 0 2px, var(--bg) 2px 3.5px);
 }
+
+.legend-home {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  color: var(--on-accent);
+  background: var(--accent);
+  border-radius: 50%;
+}
+
+.legend-home svg {
+  width: 0.7rem;
+  height: 0.7rem;
+}
+
+.legend-home.is-theirs {
+  color: var(--home-theirs);
+  background: transparent;
+  border: 1.5px solid var(--home-theirs);
+}

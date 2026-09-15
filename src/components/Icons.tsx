@@ -6,3 +6,22 @@ export function GitHubIcon() {
     </svg>
   );
 }
+
+/** Outline of the house glyph used for the home marker and the app icon. */
+export const HOUSE_PATH = "M12 3.5 3.5 11h2.2v9.5h5.1V15h2.4v5.5h5.1V11h2.2z";
+
+/** A small house, inherits currentColor. */
+export function HomeIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="16"
+      height="16"
+      aria-hidden="true"
+      fill="currentColor"
+      className={className}
+    >
+      <path d={HOUSE_PATH} />
+    </svg>
+  );
+}

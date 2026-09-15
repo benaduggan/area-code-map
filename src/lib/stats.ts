@@ -1,5 +1,7 @@
 import { getAreaCode, type AreaCode } from "./areacodes";
 import type { ImportResult } from "./contacts";
+import { shapesForCode } from "./coverage";
+import { milesBetween } from "./geo/model";
 
 export interface Stats {
   regions: number;
@@ -65,5 +67,44 @@ export function computeStats(result: ImportResult): Stats {
     topCount,
     oldest,
     newest,
+  };
+}
+
+export interface HomeStats {
+  /** Numbers that share the user's own area code (its whole overlay complex). */
+  fromHome: number;
+  /** Share of all mapped numbers, 0..1. */
+  fromHomeShare: number;
+  /** The mapped area code farthest from home, when distances are known. */
+  farthest: AreaCode | null;
+  farthestMiles: number;
+}
+
+/** Facts about an import relative to the user's own area code. */
+export function computeHomeStats(result: ImportResult, home: string): HomeStats {
+  const homeCode = getAreaCode(home);
+  const homeShape = shapesForCode(home)[0];
+  const complex = new Set(homeCode?.overlayComplex ?? [home]);
+  let fromHome = 0;
+  let total = 0;
+  let farthest: AreaCode | null = null;
+  let farthestMiles = 0;
+  for (const [npa, count] of result.counts) {
+    total += count;
+    if (complex.has(npa)) fromHome += count;
+    const a = getAreaCode(npa);
+    if (!a || !homeShape) continue;
+    const shape = shapesForCode(npa)[0];
+    const miles = shape ? milesBetween(homeShape, shape) : null;
+    if (miles !== null && (miles > farthestMiles || (miles === farthestMiles && !farthest))) {
+      farthest = a;
+      farthestMiles = miles;
+    }
+  }
+  return {
+    fromHome,
+    fromHomeShare: total ? fromHome / total : 0,
+    farthest: farthestMiles > 0 ? farthest : null,
+    farthestMiles,
   };
 }

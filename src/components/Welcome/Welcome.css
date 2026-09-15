@@ -1,0 +1,143 @@
+.welcome {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  max-width: 38rem;
+  margin: 0 auto;
+  padding: clamp(0.5rem, 3vh, 2rem) 0.25rem 2rem;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.welcome-intro,
+.welcome-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Two columns once there is room: the story on the left, the two steps on
+   the right, so the whole screen fits without scrolling on a laptop. */
+@media (min-width: 960px) {
+  .welcome {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    gap: 2rem clamp(2rem, 5vw, 4rem);
+    align-content: start;
+    max-width: 68rem;
+  }
+  .welcome-actions {
+    padding: 1.25rem 1.5rem;
+    border: 1px solid var(--border);
+    border-radius: 0.8rem;
+    background: var(--bg-elevated);
+  }
+  .welcome-actions .home-input,
+  .welcome-actions .paste-input,
+  .welcome-actions .btn {
+    background: var(--bg);
+  }
+  .welcome-actions .btn-primary {
+    background: var(--accent);
+  }
+  .welcome-privacy {
+    background: var(--bg-elevated);
+  }
+}
+
+.welcome-tagline {
+  margin: 0 0 0.5rem;
+  font-size: clamp(1.75rem, 4.5vw, 2.5rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+.welcome-lead {
+  margin: 0;
+  font-size: 1.1rem;
+  line-height: 1.5;
+  color: var(--fg);
+}
+
+.welcome-why ul,
+.welcome-privacy ul {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.welcome-why li,
+.welcome-privacy li {
+  margin: 0.35rem 0;
+}
+
+.welcome-privacy {
+  padding: 0.9rem 1.1rem;
+  background: var(--bg-elevated);
+  border-left: 3px solid var(--ok);
+  border-radius: 0.6rem;
+  font-size: 0.95rem;
+}
+
+.welcome-privacy h2,
+.welcome-step h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.welcome-privacy .link {
+  margin-top: 0.5rem;
+}
+
+.welcome-step {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.welcome-step-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  color: var(--on-accent);
+  background: var(--accent);
+  border-radius: 50%;
+}
+
+.welcome-step-icon svg {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+.welcome .remember {
+  margin: 0;
+}
+
+.welcome .import.is-bare {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.welcome-skip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.welcome-skip-hint {
+  font-size: 0.85rem;
+  color: var(--muted);
+}

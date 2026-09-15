@@ -1,13 +1,15 @@
 import { useMemo, useState } from "react";
 import { displayCities, getAreaCode, type AreaCode } from "../../lib/areacodes";
 import type { ImportResult } from "../../lib/contacts";
-import { computeStats } from "../../lib/stats";
+import { computeHomeStats, computeStats } from "../../lib/stats";
 import { COMPARE_LABELS } from "../../lib/compare";
 import { AreaCodeCard } from "../Detail/AreaCodeCard";
 import { NameList } from "../Detail/NameList";
 import { ShareBar } from "../Share/ShareBar";
 import { SkippedDialog } from "./SkippedDialog";
 import type { Comparison } from "../../lib/compare";
+import { InfoTip, REMEMBER_TIP } from "../InfoTip";
+import { HomeRow } from "../Home/HomeRow";
 import "./ResultsPanel.css";
 
 interface Props {
@@ -25,6 +27,9 @@ interface Props {
   compareColors: Record<"mine" | "theirs" | "both", string>;
   /** Present when comparing against a shared map. */
   comparison?: { theirs: ReadonlyMap<string, number>; result: Comparison } | null;
+  /** The user's own area code. */
+  home: string | null;
+  onHomeChange: (npa: string | null) => void;
 }
 
 export function ResultsPanel({
@@ -39,8 +44,11 @@ export function ResultsPanel({
   comparison,
   scaleLegend,
   compareColors,
+  home,
+  onHomeChange,
 }: Props) {
   const stats = useMemo(() => computeStats(result), [result]);
+  const homeStats = useMemo(() => (home ? computeHomeStats(result, home) : null), [result, home]);
   const ranked = useMemo(() => {
     // In compare mode, codes only the other person has are listed too (with 0).
     const npas = new Set([...result.counts.keys(), ...(comparison?.theirs.keys() ?? [])]);
@@ -68,6 +76,8 @@ export function ResultsPanel({
         </button>
       </div>
 
+      <HomeRow home={home} onChange={onHomeChange} />
+
       <div className="stat-grid">
         <Stat value={summary.nanp} label="numbers" />
         <Stat value={result.counts.size} label="area codes" />
@@ -83,6 +93,24 @@ export function ResultsPanel({
           <li>
             Most common: <strong>{stats.top.npa}</strong> ({stats.top.regionName}), {stats.topCount}{" "}
             {stats.topCount === 1 ? "number" : "numbers"}
+          </li>
+        )}
+        {home && homeStats && (
+          <li>
+            From your home area code (<strong>{home}</strong>): {homeStats.fromHome}{" "}
+            {homeStats.fromHome === 1 ? "number" : "numbers"}
+            {homeStats.fromHome > 0 &&
+              `, ${Math.round(homeStats.fromHomeShare * 100)}% of your map`}
+          </li>
+        )}
+        {homeStats?.farthest && (
+          <li>
+            Farthest from home: <strong>{homeStats.farthest.npa}</strong> (
+            {placeOf(homeStats.farthest)}), about{" "}
+            {Math.round(homeStats.farthestMiles / 10) * 10 >= 100
+              ? (Math.round(homeStats.farthestMiles / 100) * 100).toLocaleString()
+              : Math.round(homeStats.farthestMiles)}{" "}
+            miles away
           </li>
         )}
         {stats.oldest && (
@@ -161,6 +189,7 @@ export function ResultsPanel({
             : scaleLegend
         }
         getExportRoot={getExportRoot}
+        home={home}
       />
       <SkippedDialog
         open={skippedOpen}
@@ -175,7 +204,7 @@ export function ResultsPanel({
           onChange={(e) => onRememberChange(e.target.checked)}
         />
         <span>Remember this map on this device</span>
-        <InfoTip text="Saved in this browser's local storage, which never leaves your device and is not synced anywhere. Use “Forget everything” to erase it." />
+        <InfoTip text={REMEMBER_TIP} />
       </label>
 
       {addMore}
@@ -207,15 +236,6 @@ function placeOf(a: AreaCode): string {
   const city = displayCities(a)[0];
   if (a.regionName === a.country) return a.regionName; // Caribbean
   return city ? `${city}, ${a.regionName}` : a.regionName;
-}
-
-/** A small ⓘ with a hover/focus tooltip; the text is also read by screen readers. */
-function InfoTip({ text }: { text: string }) {
-  return (
-    <span className="info-tip" tabIndex={0} role="note" aria-label={text} data-tip={text}>
-      i
-    </span>
-  );
 }
 
 function Stat({ value, label }: { value: number; label: string }) {
