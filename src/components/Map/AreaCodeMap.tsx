@@ -187,6 +187,12 @@ export const AreaCodeMap = forwardRef<AreaCodeMapHandle, AreaCodeMapProps>(funct
 
   const zoomed = transform.k !== 1 || transform.x !== 0 || transform.y !== 0;
 
+  const zoomBy = (factor: number) => {
+    const svg = svgRef.current;
+    const z = zoomRef.current;
+    if (svg && z) select(svg).transition().duration(250).call(z.scaleBy, factor);
+  };
+
   return (
     <div className="map-container" ref={containerRef} onPointerMove={handleMove}>
       <svg
@@ -223,19 +229,43 @@ export const AreaCodeMap = forwardRef<AreaCodeMapHandle, AreaCodeMapProps>(funct
           </g>
         ))}
       </svg>
-      {zoomed && (
+      <div className="map-controls">
         <button
           type="button"
-          className="map-reset"
-          onClick={() => {
-            const svg = svgRef.current;
-            const z = zoomRef.current;
-            if (svg && z) select(svg).transition().duration(400).call(z.transform, zoomIdentity);
-          }}
+          className="map-control"
+          aria-label="Zoom in"
+          title="Zoom in"
+          disabled={transform.k >= MAX_ZOOM}
+          onClick={() => zoomBy(1.6)}
         >
-          Reset view
+          +
         </button>
-      )}
+        <button
+          type="button"
+          className="map-control"
+          aria-label="Zoom out"
+          title="Zoom out"
+          disabled={transform.k <= MIN_ZOOM}
+          onClick={() => zoomBy(1 / 1.6)}
+        >
+          −
+        </button>
+        {zoomed && (
+          <button
+            type="button"
+            className="map-control map-reset"
+            aria-label="Reset view"
+            title="Reset view"
+            onClick={() => {
+              const svg = svgRef.current;
+              const z = zoomRef.current;
+              if (svg && z) select(svg).transition().duration(400).call(z.transform, zoomIdentity);
+            }}
+          >
+            ⟲
+          </button>
+        )}
+      </div>
       {hovered && pointer && renderTooltip && (
         <div className="map-tooltip" style={{ left: pointer.x, top: pointer.y }} role="tooltip">
           {renderTooltip(hovered)}

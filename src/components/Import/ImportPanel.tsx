@@ -157,19 +157,51 @@ export function ImportPanel({ onImport, compact = false }: Props) {
       {!compact && (
         <details className="import-help">
           <summary>How do I export my contacts?</summary>
-          <ul>
+          <ul className="export-list">
             <li>
-              <strong>iPhone / iCloud:</strong> icloud.com → Contacts → select all → Export vCard.
+              <span>
+                <strong>iPhone / iCloud:</strong> Contacts → select all → Export vCard.
+              </span>
+              <a
+                className="btn btn-small"
+                href="https://www.icloud.com/contacts"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Open iCloud Contacts ↗
+              </a>
             </li>
             <li>
-              <strong>Google:</strong> contacts.google.com → Export → Google CSV or vCard.
+              <span>
+                <strong>Google:</strong> Export → Google CSV or vCard.
+              </span>
+              <a
+                className="btn btn-small"
+                href="https://contacts.google.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Open Google Contacts ↗
+              </a>
             </li>
             <li>
-              <strong>Android:</strong> Contacts app → Fix &amp; manage → Export to file (.vcf).
+              <span>
+                <strong>Outlook:</strong> People → Manage → Export contacts.
+              </span>
+              <a
+                className="btn btn-small"
+                href="https://outlook.live.com/people/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Open Outlook People ↗
+              </a>
             </li>
             <li>
-              <strong>Outlook:</strong> File → Open &amp; Export → Import/Export → Export to a CSV
-              file.
+              <span>
+                <strong>Android:</strong> Contacts app → Fix &amp; manage → Export to file (.vcf),
+                then upload it here.
+              </span>
             </li>
           </ul>
         </details>
