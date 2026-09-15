@@ -11,7 +11,10 @@ describe("aggregateContacts", () => {
       "paste",
     );
     expect(Object.fromEntries(result.counts)).toEqual({ "919": 2, "212": 1, "416": 1 });
-    expect(result.names.get("919")).toEqual(["Bob", "Jane Doe"]);
+    expect(result.names.get("919")).toEqual([
+      { name: "Bob", count: 1 },
+      { name: "Jane Doe", count: 1 },
+    ]);
     expect(result.names.get("416")).toBeUndefined();
     expect(result.skipped).toEqual({ foreign: ["+442079460958"], unrecognised: ["12345"] });
     expect(result.summary).toEqual({
@@ -25,13 +28,31 @@ describe("aggregateContacts", () => {
   });
 });
 
+describe("aggregateContacts name counts", () => {
+  it("counts several numbers for one name and merges duplicate contacts", () => {
+    const r = aggregateContacts(
+      [
+        { name: "Glenn", phones: ["678-555-0100", "678-555-0101"] },
+        { name: "Glenn", phones: ["678-555-0102"] },
+        { name: null, phones: ["678-555-0103"] },
+      ],
+      "vcard",
+    );
+    expect(r.counts.get("678")).toBe(4);
+    expect(r.names.get("678")).toEqual([{ name: "Glenn", count: 3 }]);
+  });
+});
+
 describe("mergeResults", () => {
   it("adds counts and unions names", () => {
     const a = aggregateContacts([{ name: "A", phones: ["919-555-0100"] }], "csv");
     const b = aggregateContacts([{ name: "B", phones: ["919-555-0101", "312-555-0100"] }], "vcard");
     const m = mergeResults([a, b])!;
     expect(Object.fromEntries(m.counts)).toEqual({ "919": 2, "312": 1 });
-    expect(m.names.get("919")).toEqual(["A", "B"]);
+    expect(m.names.get("919")).toEqual([
+      { name: "A", count: 1 },
+      { name: "B", count: 1 },
+    ]);
     expect(m.summary.nanp).toBe(3);
     expect(mergeResults([])).toBeNull();
   });

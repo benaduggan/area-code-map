@@ -34,9 +34,15 @@ export interface ImportSummary {
 export interface ImportResult {
   summary: ImportSummary;
   counts: Map<string, number>;
-  names: Map<string, string[]>;
+  /** Per area code: each contact name seen there and how many of that code's numbers belong to it. Sorted by name. */
+  names: Map<string, NamedCount[]>;
   /** What could not be mapped, so the user can see why. Memory only, never persisted. */
   skipped: SkippedNumbers;
+}
+
+export interface NamedCount {
+  name: string;
+  count: number;
 }
 
 export interface SkippedNumbers {
