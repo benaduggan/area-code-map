@@ -62,6 +62,14 @@ export function ShareBar({ counts, caption, getSvg }: Props) {
       <button type="button" className="btn btn-primary" onClick={() => setOpen(true)}>
         Share
       </button>
+      <button type="button" className="btn" onClick={() => void downloadPng()} disabled={busy}>
+        Download image
+      </button>
+      {status && !open && (
+        <span className="share-status share-status-inline" role="status">
+          {status}
+        </span>
+      )}
       <dialog
         ref={ref}
         className="privacy-dialog"

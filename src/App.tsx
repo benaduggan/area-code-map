@@ -61,6 +61,24 @@ export function App() {
   const { theme, setTheme, dark } = useTheme();
   const online = useOnline();
   const [privacyOpen, setPrivacyOpen] = useState(false);
+  const sidebarRef = useRef<HTMLElement>(null);
+  const [showTop, setShowTop] = useState(false);
+
+  useEffect(() => {
+    const el = sidebarRef.current;
+    const update = () => setShowTop((el?.scrollTop ?? 0) > 400 || window.scrollY > 400);
+    el?.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("scroll", update, { passive: true });
+    return () => {
+      el?.removeEventListener("scroll", update);
+      window.removeEventListener("scroll", update);
+    };
+  }, []);
+
+  const scrollToTop = () => {
+    sidebarRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   useEffect(() => {
     const onHash = () => setShared(sharedFromLocation());
@@ -243,7 +261,7 @@ export function App() {
       <PrivacyDialog open={privacyOpen} onClose={() => setPrivacyOpen(false)} online={online} />
 
       <div className="layout">
-        <aside className="sidebar">
+        <aside className="sidebar" ref={sidebarRef}>
           <SearchBox value={query} onChange={setQuery} />
           {!showingSearch && !selectedShape && sharedBanner}
 
@@ -325,6 +343,11 @@ export function App() {
               <ImportPanel onImport={handleImport} />
               <p className="hint">Or search above, or click any region on the map.</p>
             </div>
+          )}
+          {showTop && (
+            <button type="button" className="to-top" onClick={scrollToTop}>
+              ↑ Top
+            </button>
           )}
         </aside>
 

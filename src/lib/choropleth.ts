@@ -1,12 +1,14 @@
 /**
- * Sequential color scale for contact counts. One hue (blue), light -> dark on
- * a light surface and dark -> light on a dark surface so "near zero" always
- * recedes toward the page background. Steps come from the validated palette.
+ * Sequential color scale for contact counts. One hue (brand amber), light ->
+ * dark on a light surface and dark -> light on a dark surface so "near zero"
+ * always recedes toward the page background. Both ramps are monotone in
+ * OKLCH lightness, which is what keeps them readable under color vision
+ * deficiency.
  */
 export const CLASS_COUNT = 5;
 
-export const LIGHT_RAMP = ["#9ec5f4", "#5598e7", "#2a78d6", "#1c5cab", "#0d366b"] as const;
-export const DARK_RAMP = ["#184f95", "#256abf", "#3987e5", "#6da7ec", "#b7d3f6"] as const;
+export const LIGHT_RAMP = ["#fde68a", "#fbbf24", "#f59e0b", "#d97706", "#92400e"] as const;
+export const DARK_RAMP = ["#78350f", "#b45309", "#d97706", "#f59e0b", "#fcd34d"] as const;
 
 export interface CountScale {
   /** Upper bound (inclusive) of each class; the last class is open-ended. */

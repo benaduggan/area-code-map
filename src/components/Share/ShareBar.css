@@ -9,7 +9,7 @@
 .share-status {
   margin: 0.5rem 0 0;
   font-size: 0.85rem;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .share-url {
@@ -54,4 +54,9 @@
   margin: 0 0 0.75rem;
   font-size: 0.8rem;
   color: var(--muted);
+}
+
+.share-status-inline {
+  flex-basis: 100%;
+  margin: 0;
 }
