@@ -11,7 +11,7 @@ picture, not the phone numbers.
 The current repo is a 2021 Parcel 2 RC + React 17 scaffold with a search box and
 no map. The toolchain (Parcel RC, Node 16 via nix, `styled-components` 5) is
 stale enough that upgrading costs about the same as starting clean, and none of
-the existing code encodes decisions we want to keep. What *is* worth keeping:
+the existing code encodes decisions we want to keep. What _is_ worth keeping:
 
 - The polygon dataset (`areacodegeojsonsmall.json`, 336 shapes, 7 MB). See the
   data section below for why and how.
@@ -34,15 +34,15 @@ the existing code encodes decisions we want to keep. What *is* worth keeping:
 
 ## What we are building (MVP scope)
 
-| # | Feature | Notes |
-|---|---------|-------|
-| 1 | Interactive map of all NANP area codes (US, Canada, Caribbean) | SVG, pan/zoom, hover + click, insets for AK/HI/Caribbean |
-| 2 | Search / browse | By area code, city, state or province. Overlays grouped ("212 / 646 / 332 / 917 — Manhattan") |
-| 3 | Import contacts | Four paths: paste text, `.vcf` (vCard), `.csv` (Google/Outlook/iCloud exports), and the browser Contact Picker API on mobile |
-| 4 | Your map | Choropleth by count, ranked list, click a region to see the names in it (in-memory only) |
-| 5 | Fun stats | "You know people in 23 area codes across 14 states." Most common, rarest, oldest code, farthest apart, etc. |
-| 6 | Share | Copy link (counts encoded in the URL hash), download PNG, compare mode when opening someone else's link |
-| 7 | Works offline | PWA install, service worker caches everything |
+| #   | Feature                                                        | Notes                                                                                                                        |
+| --- | -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Interactive map of all NANP area codes (US, Canada, Caribbean) | SVG, pan/zoom, hover + click, insets for AK/HI/Caribbean                                                                     |
+| 2   | Search / browse                                                | By area code, city, state or province. Overlays grouped ("212 / 646 / 332 / 917 — Manhattan")                                |
+| 3   | Import contacts                                                | Four paths: paste text, `.vcf` (vCard), `.csv` (Google/Outlook/iCloud exports), and the browser Contact Picker API on mobile |
+| 4   | Your map                                                       | Choropleth by count, ranked list, click a region to see the names in it (in-memory only)                                     |
+| 5   | Fun stats                                                      | "You know people in 23 area codes across 14 states." Most common, rarest, oldest code, farthest apart, etc.                  |
+| 6   | Share                                                          | Copy link (counts encoded in the URL hash), download PNG, compare mode when opening someone else's link                      |
+| 7   | Works offline                                                  | PWA install, service worker caches everything                                                                                |
 
 Explicitly **out** of the MVP: user accounts, server sync, historical
 area-code timelines, international (non-+1) numbers beyond counting them as
@@ -58,20 +58,20 @@ area-code timelines, international (non-+1) numbers beyond counting them as
 - **It is a ~2010 snapshot.** Against the current NANPA list it is missing 119
   of 454 in-service geographic codes.
 - The good news: 118 of those 119 are **overlays**, i.e. they share their
-  footprint with a code that *is* in the file (332 = 212's shape, 984 = 919's,
+  footprint with a code that _is_ in the file (332 = 212's shape, 984 = 919's,
   929 = 718/347's, 437 = 416/647's). So the geometry is still right; only the
   labelling is stale. Full join results below.
 
 ### Where current data actually lives (researched Sept 2026)
 
-| Source | What it is | Currency | License | Verdict |
-|--------|-----------|----------|---------|---------|
-| **NANPA NPA Database** `https://reports.nanpa.com/public/npa_report.csv` | Authoritative list of every NPA: location, country, in-service date, overlay complex, parent NPA, time zone, status | File dated 2026-09-14; 454 in-service geographic codes (378 US, 55 Canada, 21 Caribbean) | Public | **Use it.** This is the metadata source. |
-| The repo's `areacodegeojsonsmall.json` | 336 polygons (US, Canada, Caribbean), from the HSIP/HIFLD federal dataset | ~2010 snapshot | Public domain | **Keep as geometry.** See join results below. |
-| `github.com/1ec5/nanp-boundaries` | Same lineage via UCLA Geoportal | 2015 | Public domain | Marginally newer than ours; not worth switching for |
-| HIFLD Open "Area Code Boundaries" | Federal polygon layer | Portal shut down Aug 2025; item 404s | Public domain | Gone; archives only |
-| Esri Living Atlas "USA Telephone Area Code Boundaries" | 356 polygons, TomTom/iconectiv sourced | 2024, annual updates, marked "retiring Dec 2026" | Esri third-party redistribution terms | **Do not bundle.** US-only (no Canada/Caribbean) and the license does not allow shipping it in an MIT app |
-| GeoTel, Pitney Bowes/Precisely, zip-codes.com | Commercial NPA boundary products | Current | Paid, no redistribution | Only if we ever need true post-2010 split geometry |
+| Source                                                                   | What it is                                                                                                          | Currency                                                                                 | License                               | Verdict                                                                                                   |
+| ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| **NANPA NPA Database** `https://reports.nanpa.com/public/npa_report.csv` | Authoritative list of every NPA: location, country, in-service date, overlay complex, parent NPA, time zone, status | File dated 2026-09-14; 454 in-service geographic codes (378 US, 55 Canada, 21 Caribbean) | Public                                | **Use it.** This is the metadata source.                                                                  |
+| The repo's `areacodegeojsonsmall.json`                                   | 336 polygons (US, Canada, Caribbean), from the HSIP/HIFLD federal dataset                                           | ~2010 snapshot                                                                           | Public domain                         | **Keep as geometry.** See join results below.                                                             |
+| `github.com/1ec5/nanp-boundaries`                                        | Same lineage via UCLA Geoportal                                                                                     | 2015                                                                                     | Public domain                         | Marginally newer than ours; not worth switching for                                                       |
+| HIFLD Open "Area Code Boundaries"                                        | Federal polygon layer                                                                                               | Portal shut down Aug 2025; item 404s                                                     | Public domain                         | Gone; archives only                                                                                       |
+| Esri Living Atlas "USA Telephone Area Code Boundaries"                   | 356 polygons, TomTom/iconectiv sourced                                                                              | 2024, annual updates, marked "retiring Dec 2026"                                         | Esri third-party redistribution terms | **Do not bundle.** US-only (no Canada/Caribbean) and the license does not allow shipping it in an MIT app |
+| GeoTel, Pitney Bowes/Precisely, zip-codes.com                            | Commercial NPA boundary products                                                                                    | Current                                                                                  | Paid, no redistribution               | Only if we ever need true post-2010 split geometry                                                        |
 
 ### Join test: current NANPA list against our polygons
 
@@ -128,16 +128,16 @@ source ──► extract strings ──► parse phone numbers ──► normali
 ```
 
 - **Sources**
-  - *Paste*: a textarea. Regex out anything that looks like a phone number.
+  - _Paste_: a textarea. Regex out anything that looks like a phone number.
     Zero-friction demo path and works everywhere.
-  - *vCard (.vcf)*: iCloud, Google Contacts, Android all export this. Parse
+  - _vCard (.vcf)_: iCloud, Google Contacts, Android all export this. Parse
     `TEL` lines (handle folded lines, `TYPE=` params, `tel:` URIs). Small
     hand-written parser; the format is simple enough that a library is not
     worth the bytes.
-  - *CSV*: Google Contacts CSV and Outlook CSV have different headers. Sniff the
+  - _CSV_: Google Contacts CSV and Outlook CSV have different headers. Sniff the
     header row, take every column whose name contains "phone", and fall back
     to "any cell that parses as a phone number."
-  - *Contact Picker API* (`navigator.contacts.select(['name','tel'], {multiple:true})`):
+  - _Contact Picker API_ (`navigator.contacts.select(['name','tel'], {multiple:true})`):
     Chrome on Android and Safari on iOS. Not on desktop. Show the button only
     when the API exists.
 - **Parsing**: `libphonenumber-js` (min metadata build, ~70 KB) for
@@ -165,19 +165,19 @@ source ──► extract strings ──► parse phone numbers ──► normali
 
 ## Tech stack
 
-| Concern | Choice | Why |
-|---------|--------|-----|
-| Build | **Vite** + TypeScript | Fast, boring, replaces the Parcel RC |
-| UI | **React 19** | Familiar; we are not doing anything framework-specific |
-| Map | **d3-geo** + **topojson-client**, rendered as SVG | No tiles, no network, tiny, fully styleable. Custom Albers projection with Alaska / Hawaii / Caribbean insets |
-| Phone parsing | **libphonenumber-js** (min) | The one hard problem we should not hand-roll |
-| State | React state + a small store (Zustand or plain context) | Import results and view state are small |
-| Styling | CSS modules or vanilla CSS with custom properties | Drop styled-components; light/dark via `prefers-color-scheme` |
-| Runtime / package manager | **Bun** | Installs, runs scripts, executes the data-pipeline scripts as plain TypeScript with no `ts-node` or build step |
-| Tests | **Vitest** for parsing/encoding logic, **Playwright** for one import-to-map smoke test | Vitest shares Vite's config (aliases, jsdom); `bun test` would need a parallel setup for DOM tests |
-| Lint/format | ESLint (flat config) + Prettier | Same as today, updated |
-| Hosting | **GitHub Pages** via Actions | Static, free, enforces "no backend" |
-| Offline | `vite-plugin-pwa` | Service worker + manifest with one plugin |
+| Concern                   | Choice                                                                                 | Why                                                                                                            |
+| ------------------------- | -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Build                     | **Vite** + TypeScript                                                                  | Fast, boring, replaces the Parcel RC                                                                           |
+| UI                        | **React 19**                                                                           | Familiar; we are not doing anything framework-specific                                                         |
+| Map                       | **d3-geo** + **topojson-client**, rendered as SVG                                      | No tiles, no network, tiny, fully styleable. Custom Albers projection with Alaska / Hawaii / Caribbean insets  |
+| Phone parsing             | **libphonenumber-js** (min)                                                            | The one hard problem we should not hand-roll                                                                   |
+| State                     | React state + a small store (Zustand or plain context)                                 | Import results and view state are small                                                                        |
+| Styling                   | CSS modules or vanilla CSS with custom properties                                      | Drop styled-components; light/dark via `prefers-color-scheme`                                                  |
+| Runtime / package manager | **Bun**                                                                                | Installs, runs scripts, executes the data-pipeline scripts as plain TypeScript with no `ts-node` or build step |
+| Tests                     | **Vitest** for parsing/encoding logic, **Playwright** for one import-to-map smoke test | Vitest shares Vite's config (aliases, jsdom); `bun test` would need a parallel setup for DOM tests             |
+| Lint/format               | ESLint (flat config) + Prettier                                                        | Same as today, updated                                                                                         |
+| Hosting                   | **GitHub Pages** via Actions                                                           | Static, free, enforces "no backend"                                                                            |
+| Offline                   | `vite-plugin-pwa`                                                                      | Service worker + manifest with one plugin                                                                      |
 
 Bun 1.x as the package manager and script runner (drop yarn v1, `nle.sh`,
 `local.nix`, `.envrc`). Vite still does the bundling; Bun's own bundler is not
@@ -214,6 +214,7 @@ Each phase ends with a deployable site. Order chosen so the risky parts
 (geometry pipeline, phone parsing) are de-risked first.
 
 ### Phase 0 — Reset the scaffold
+
 - New Vite + React + TS project in place; remove Parcel, styled-components,
   react-router, nix/direnv files, yarn.lock, `.envrc`, `nle.sh`.
 - ESLint flat config, Prettier, Vitest, GitHub Actions: lint + typecheck + test
@@ -222,6 +223,7 @@ Each phase ends with a deployable site. Order chosen so the risky parts
 - **Done when**: empty app deploys to GitHub Pages from CI.
 
 ### Phase 1 — Data pipeline
+
 - `build-shapes.ts`: simplify + TopoJSON + `shapeId`. Commit output.
 - `build-areacodes.ts`: download NANPA CSV, produce `areacodes.json`, fail on
   unmapped active NPAs. Commit output.
@@ -232,6 +234,7 @@ Each phase ends with a deployable site. Order chosen so the risky parts
   data ≤ 500 KB gzipped.
 
 ### Phase 2 — The map (finishes the original README TODO)
+
 - Projection with insets; SVG render; pan/zoom (`d3-zoom`).
 - Hover tooltip, click → detail panel (region, overlays, cities, in-service year).
 - Search box: by NPA prefix, city, state/province. Result click zooms the map.
@@ -241,6 +244,7 @@ Each phase ends with a deployable site. Order chosen so the risky parts
   the map on a phone and a laptop.
 
 ### Phase 3 — Import your contacts
+
 - Phone extraction + normalisation with unit tests against ugly real-world
   strings (`(919) 555-0100`, `+1 919.555.0100 ext 4`, `1-919-555-0100`,
   `9195550100`, numbers embedded in notes).
@@ -254,12 +258,14 @@ Each phase ends with a deployable site. Order chosen so the risky parts
   in devtools and by a Playwright test that fails on any fetch).
 
 ### Phase 4 — Share
+
 - Hash encoding/decoding with round-trip tests.
 - Copy-link, open-link (read-only view), compare mode.
 - PNG export.
 - **Done when**: two people can exchange links and see a comparison map.
 
 ### Phase 5 — Polish and ship
+
 - PWA + offline; strict CSP meta tag; Lighthouse pass.
 - Accessibility: keyboard navigation of regions, ARIA on the list, colour scale
   with a pattern or label fallback.
@@ -269,14 +275,14 @@ Each phase ends with a deployable site. Order chosen so the risky parts
 
 ## Risks and how the plan handles them
 
-| Risk | Mitigation |
-|------|-----------|
-| Stale geometry as new splits happen | Build-time check for unmapped NPAs (currently 0 after the 721 polygon); documented manual shape refresh; centroid fallback renderer |
-| Contact Picker API is mobile-only and permission-gated | It is one of four import paths and only shown when available |
-| Phone strings are messy | `libphonenumber-js` plus a test corpus built from real exports; unrecognised numbers reported as a count |
-| Users distrust "client-side only" claims | CSP with no `connect-src`, offline mode, a test that fails on any post-load network call, open source |
-| SVG performance with 336 complex shapes on mobile | Simplify aggressively; render at one detail level; only re-render on data change, not on pan |
-| Caribbean / Alaska / Hawaii layout | Inset panels, same approach as standard US Albers maps |
+| Risk                                                   | Mitigation                                                                                                                          |
+| ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Stale geometry as new splits happen                    | Build-time check for unmapped NPAs (currently 0 after the 721 polygon); documented manual shape refresh; centroid fallback renderer |
+| Contact Picker API is mobile-only and permission-gated | It is one of four import paths and only shown when available                                                                        |
+| Phone strings are messy                                | `libphonenumber-js` plus a test corpus built from real exports; unrecognised numbers reported as a count                            |
+| Users distrust "client-side only" claims               | CSP with no `connect-src`, offline mode, a test that fails on any post-load network call, open source                               |
+| SVG performance with 336 complex shapes on mobile      | Simplify aggressively; render at one detail level; only re-render on data change, not on pan                                        |
+| Caribbean / Alaska / Hawaii layout                     | Inset panels, same approach as standard US Albers maps                                                                              |
 
 ## Decisions I made that you may want to revisit
 
