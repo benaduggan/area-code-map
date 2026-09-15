@@ -86,7 +86,8 @@ await page.waitForTimeout(700);
 await page.fill("input[type=search]", "");
 
 // Share link carries counts in the hash and nothing in the path or query.
-await page.click("text=Copy share link");
+await page.click("button:has-text('Share')");
+await page.click("text=Copy link");
 await page.waitForSelector("text=Link copied");
 const shareUrl = await page.evaluate(() => navigator.clipboard.readText());
 const parsed = new URL(shareUrl);
@@ -115,7 +116,7 @@ await viewer.goto(shareUrl, { waitUntil: "networkidle" });
 await viewer.waitForSelector("text=shared map");
 await viewer.close();
 
-// PNG export triggers a download.
+// PNG export triggers a download (the share dialog is still open).
 const [download] = await Promise.all([
   page.waitForEvent("download", { timeout: 15000 }),
   page.click("text=Download image"),

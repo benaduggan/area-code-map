@@ -35,4 +35,13 @@ export interface ImportResult {
   summary: ImportSummary;
   counts: Map<string, number>;
   names: Map<string, string[]>;
+  /** What could not be mapped, so the user can see why. Memory only, never persisted. */
+  skipped: SkippedNumbers;
+}
+
+export interface SkippedNumbers {
+  /** E.164 numbers outside +1. */
+  foreign: string[];
+  /** Raw strings that did not parse, or +1 numbers with an unknown area code. */
+  unrecognised: string[];
 }

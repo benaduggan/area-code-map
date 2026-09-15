@@ -1,9 +1,10 @@
-import { useMemo } from "react";
-import { getAreaCode, type AreaCode } from "../../lib/areacodes";
+import { useMemo, useState } from "react";
+import { displayCities, getAreaCode, type AreaCode } from "../../lib/areacodes";
 import type { ImportResult } from "../../lib/contacts";
 import { computeStats } from "../../lib/stats";
 import { AreaCodeCard } from "../Detail/AreaCodeCard";
 import { ShareBar } from "../Share/ShareBar";
+import { SkippedDialog } from "./SkippedDialog";
 import type { Comparison } from "../../lib/compare";
 import "./ResultsPanel.css";
 
@@ -45,6 +46,8 @@ export function ResultsPanel({
       );
   }, [result, comparison]);
   const { summary } = result;
+  const [skippedOpen, setSkippedOpen] = useState(false);
+  const skippedCount = summary.foreign + summary.unrecognised;
 
   return (
     <section className="results">
@@ -62,7 +65,7 @@ export function ResultsPanel({
           value={stats.regions}
           label={stats.regions === 1 ? "state or province" : "states & provinces"}
         />
-        {stats.countries > 1 && <Stat value={stats.countries} label="countries" />}
+        <Stat value={stats.countries} label={stats.countries === 1 ? "country" : "countries"} />
       </div>
 
       <ul className="facts">
@@ -74,20 +77,29 @@ export function ResultsPanel({
         )}
         {stats.oldest && (
           <li>
-            Oldest code you know: <strong>{stats.oldest.npa}</strong>, in service since{" "}
-            {stats.oldest.inService}
+            Oldest area code you know: <strong>{stats.oldest.npa}</strong> ({placeOf(stats.oldest)}
+            ), in service since {stats.oldest.inService}
           </li>
         )}
         {stats.newest && stats.newest.inService >= 2010 && (
           <li>
-            Newest: <strong>{stats.newest.npa}</strong>, added in {stats.newest.inService}
+            Newest area code: <strong>{stats.newest.npa}</strong> ({placeOf(stats.newest)}), added
+            in {stats.newest.inService}
           </li>
         )}
-        {(summary.foreign > 0 || summary.unrecognised > 0) && (
+        {skippedCount > 0 && (
           <li className="muted">
             Not mapped: {summary.foreign > 0 && `${summary.foreign} outside North America`}
             {summary.foreign > 0 && summary.unrecognised > 0 && ", "}
             {summary.unrecognised > 0 && `${summary.unrecognised} unrecognised`}
+            {result.skipped.foreign.length + result.skipped.unrecognised.length > 0 && (
+              <>
+                {" · "}
+                <button type="button" className="link" onClick={() => setSkippedOpen(true)}>
+                  see which
+                </button>
+              </>
+            )}
           </li>
         )}
       </ul>
@@ -110,6 +122,11 @@ export function ResultsPanel({
         counts={result.counts}
         caption={`${summary.nanp} numbers across ${result.counts.size} area codes · area code map`}
         getSvg={getSvg}
+      />
+      <SkippedDialog
+        open={skippedOpen}
+        onClose={() => setSkippedOpen(false)}
+        skipped={result.skipped}
       />
 
       <label
@@ -150,6 +167,13 @@ export function ResultsPanel({
       </div>
     </section>
   );
+}
+
+/** "St. Louis, Missouri" or just the region when no city is curated. */
+function placeOf(a: AreaCode): string {
+  const city = displayCities(a)[0];
+  if (a.regionName === a.country) return a.regionName; // Caribbean
+  return city ? `${city}, ${a.regionName}` : a.regionName;
 }
 
 function Stat({ value, label }: { value: number; label: string }) {

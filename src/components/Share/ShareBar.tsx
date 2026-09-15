@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { shareUrlFor } from "../../lib/share/codec";
 import { downloadBlob, mapToPngBlob } from "../../lib/share/png";
 import "./ShareBar.css";
@@ -10,21 +10,30 @@ interface Props {
 }
 
 export function ShareBar({ counts, caption, getSvg }: Props) {
+  const [open, setOpen] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const ref = useRef<HTMLDialogElement>(null);
+  const url = shareUrlFor(counts);
+
+  useEffect(() => {
+    const d = ref.current;
+    if (!d) return;
+    if (open && !d.open) d.showModal();
+    else if (!open && d.open) d.close();
+  }, [open]);
 
   const flash = (msg: string) => {
     setStatus(msg);
-    setTimeout(() => setStatus(null), 2500);
+    setTimeout(() => setStatus(null), 3000);
   };
 
   const copyLink = async () => {
-    const url = shareUrlFor(counts);
     try {
       await navigator.clipboard.writeText(url);
-      flash("Link copied. It contains only your per-area-code counts.");
+      flash("Link copied.");
     } catch {
-      window.prompt("Copy this link:", url);
+      flash("Could not access the clipboard. Select the link above and copy it.");
     }
   };
 
@@ -40,6 +49,7 @@ export function ShareBar({ counts, caption, getSvg }: Props) {
         textColor: cs.getPropertyValue("--fg").trim() || "#000000",
       });
       downloadBlob(blob, "area-code-map.png");
+      flash("Image downloaded.");
     } catch (e) {
       flash(e instanceof Error ? e.message : "Could not create the image.");
     } finally {
@@ -49,17 +59,72 @@ export function ShareBar({ counts, caption, getSvg }: Props) {
 
   return (
     <div className="share">
-      <button type="button" className="btn btn-primary" onClick={() => void copyLink()}>
-        Copy share link
+      <button type="button" className="btn btn-primary" onClick={() => setOpen(true)}>
+        Share
       </button>
-      <button type="button" className="btn" onClick={() => void downloadPng()} disabled={busy}>
-        Download image
-      </button>
-      {status && (
-        <span className="share-status" role="status">
-          {status}
-        </span>
-      )}
+      <dialog
+        ref={ref}
+        className="privacy-dialog"
+        onClose={() => setOpen(false)}
+        onClick={(e) => {
+          if (e.target === e.currentTarget) setOpen(false);
+        }}
+        aria-labelledby="share-title"
+      >
+        <div className="privacy-panel">
+          <div className="privacy-head">
+            <h2 id="share-title">Share your map</h2>
+            <button
+              type="button"
+              className="link"
+              onClick={() => setOpen(false)}
+              aria-label="Close"
+            >
+              ✕
+            </button>
+          </div>
+          <p className="privacy-status">
+            A share link carries <strong>only how many numbers you have per area code</strong>. No
+            names, no phone numbers, nothing about who your contacts are. Anyone who opens it sees
+            your map and can compare it with their own.
+          </p>
+
+          <h3>Link</h3>
+          <input
+            className="share-url"
+            type="text"
+            readOnly
+            value={url}
+            aria-label="Share link"
+            onFocus={(e) => e.currentTarget.select()}
+          />
+          <p className="skipped-note">
+            {counts.size} area codes packed into {url.length - url.indexOf("#") - 1} characters
+            after the <code>#</code>, which browsers never send to any server.
+          </p>
+          <div className="share-actions">
+            <button type="button" className="btn btn-primary" onClick={() => void copyLink()}>
+              Copy link
+            </button>
+            <button
+              type="button"
+              className="btn"
+              onClick={() => void downloadPng()}
+              disabled={busy}
+            >
+              Download image
+            </button>
+          </div>
+          <p className="skipped-note">
+            The image is the map as you see it now, with a caption, rendered in your browser.
+          </p>
+          {status && (
+            <p className="share-status" role="status">
+              {status}
+            </p>
+          )}
+        </div>
+      </dialog>
     </div>
   );
 }

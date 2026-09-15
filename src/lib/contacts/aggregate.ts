@@ -10,21 +10,20 @@ export function aggregateContacts(contacts: Contact[], source: ImportSource): Im
   const seen = new Set<string>();
   const counts = new Map<string, number>();
   const names = new Map<string, string[]>();
-  let foreign = 0;
-  let unrecognised = 0;
+  const skipped = { foreign: [] as string[], unrecognised: [] as string[] };
 
   for (const contact of contacts) {
     for (const raw of contact.phones) {
       const parsed = parseNumber(raw);
       if (parsed.kind === "unrecognised") {
-        unrecognised++;
+        skipped.unrecognised.push(raw.trim());
         continue;
       }
       const key = parsed.kind === "nanp" ? parsed.number.e164 : parsed.e164;
       if (seen.has(key)) continue;
       seen.add(key);
       if (parsed.kind === "foreign") {
-        foreign++;
+        skipped.foreign.push(parsed.e164);
         continue;
       }
       const { npa } = parsed.number;
@@ -46,11 +45,12 @@ export function aggregateContacts(contacts: Contact[], source: ImportSource): Im
       contacts: contacts.length,
       numbers: seen.size,
       nanp,
-      foreign,
-      unrecognised,
+      foreign: skipped.foreign.length,
+      unrecognised: skipped.unrecognised.length,
     },
     counts,
     names,
+    skipped,
   };
 }
 
@@ -68,7 +68,10 @@ export function mergeResults(results: ImportResult[]): ImportResult | null {
     foreign: 0,
     unrecognised: 0,
   };
+  const skipped = { foreign: [] as string[], unrecognised: [] as string[] };
   for (const r of results) {
+    skipped.foreign.push(...r.skipped.foreign);
+    skipped.unrecognised.push(...r.skipped.unrecognised);
     for (const [npa, n] of r.counts) counts.set(npa, (counts.get(npa) ?? 0) + n);
     for (const [npa, list] of r.names) {
       const merged = new Set([...(names.get(npa) ?? []), ...list]);
@@ -83,5 +86,5 @@ export function mergeResults(results: ImportResult[]): ImportResult | null {
     summary.foreign += r.summary.foreign;
     summary.unrecognised += r.summary.unrecognised;
   }
-  return { summary, counts, names };
+  return { summary, counts, names, skipped };
 }

@@ -23,7 +23,8 @@ import {
   setRememberEnabled,
 } from "./lib/contacts/store";
 import { PrivacyDialog } from "./components/Privacy/PrivacyDialog";
-import { usePrefersDark } from "./lib/usePrefersDark";
+import { useTheme, type Theme } from "./lib/useTheme";
+import { GitHubIcon } from "./components/Icons";
 import { useOnline } from "./lib/useOnline";
 import "./App.css";
 
@@ -33,6 +34,7 @@ function resultFromCounts(counts: Map<string, number>): ImportResult {
     summary: { source: "paste", contacts: 0, numbers: nanp, nanp, foreign: 0, unrecognised: 0 },
     counts,
     names: new Map(),
+    skipped: { foreign: [], unrecognised: [] },
   };
 }
 
@@ -44,6 +46,10 @@ function sharedFromLocation(): Map<string, number> | null {
   return typeof location === "undefined" ? null : countsFromHash(location.hash);
 }
 
+const NEXT_THEME: Record<Theme, Theme> = { system: "light", light: "dark", dark: "system" };
+const THEME_LABEL: Record<Theme, string> = { system: "Auto", light: "Light", dark: "Dark" };
+const THEME_ICON: Record<Theme, string> = { system: "◐", light: "☀", dark: "☾" };
+
 export function App() {
   const mapRef = useRef<AreaCodeMapHandle>(null);
   const [query, setQuery] = useState("");
@@ -52,7 +58,7 @@ export function App() {
   const [result, setResult] = useState<ImportResult | null>(() => restoredResult());
   const [remember, setRemember] = useState(() => isRememberEnabled());
   const [shared, setShared] = useState<Map<string, number> | null>(() => sharedFromLocation());
-  const dark = usePrefersDark();
+  const { theme, setTheme, dark } = useTheme();
   const online = useOnline();
   const [privacyOpen, setPrivacyOpen] = useState(false);
 
@@ -207,13 +213,22 @@ export function App() {
           >
             {online ? "Works offline" : "Offline"}
           </button>
+          <button
+            type="button"
+            className="pill"
+            onClick={() => setTheme(NEXT_THEME[theme])}
+            title="Switch theme"
+            aria-label={`Theme: ${THEME_LABEL[theme]}. Switch theme`}
+          >
+            {THEME_ICON[theme]} {THEME_LABEL[theme]}
+          </button>
           <a
             className="pill"
             href="https://github.com/benaduggan/area-code-map"
             target="_blank"
             rel="noopener noreferrer"
           >
-            Source code
+            <GitHubIcon /> Source code
           </a>
           <a
             className="pill coffee"
@@ -317,6 +332,7 @@ export function App() {
           <AreaCodeMap
             ref={mapRef}
             fillFor={fillFor}
+            hatchFor={comparison ? (id) => comparison.shapeClass.get(id) === "both" : undefined}
             selectedShapeIds={selectedShapes}
             highlightedShapeIds={highlighted}
             onSelectShape={selectShape}
@@ -343,7 +359,10 @@ export function App() {
             <div className="legend" aria-label="Compare legend">
               {(["mine", "both", "theirs"] as const).map((c) => (
                 <span key={c} className="legend-item">
-                  <span className="legend-swatch" style={{ background: compareColors[c] }} />
+                  <span
+                    className={"legend-swatch" + (c === "both" ? " is-hatched" : "")}
+                    style={{ background: compareColors[c] }}
+                  />
                   {COMPARE_LABELS[c]}
                 </span>
               ))}
@@ -356,8 +375,9 @@ export function App() {
 
       <footer className="app-footer">
         {areaCodes.length} area codes · NANPA data as of {areaCodeDataDate} ·{" "}
-        <a href="https://github.com/benaduggan/area-code-map">Source</a> · Nothing you import leaves
-        your browser.
+        <button type="button" className="link" onClick={() => setPrivacyOpen(true)}>
+          Nothing you import leaves your browser.
+        </button>
       </footer>
     </div>
   );
