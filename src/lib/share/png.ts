@@ -80,21 +80,19 @@ export async function mapToPngBlob(svg: SVGSVGElement, options: PngOptions): Pro
     ctx.textBaseline = "middle";
     ctx.font = `700 20px ${FONT}`;
     ctx.fillText(options.title, 16, headerHeight / 2);
+    const titleWidth = ctx.measureText(options.title).width;
     ctx.fillStyle = c.muted;
     ctx.font = `400 13px ${FONT}`;
-    ctx.fillText(
-      "See where the people you know are from.",
-      16 + ctx.measureText(options.title).width + 60,
-      headerHeight / 2,
-    );
+    ctx.fillText("See where the people you know are from.", 16 + titleWidth + 14, headerHeight / 2);
 
     // Stat cards, top-left of the map (open ocean in this projection)
-    const cardW = 104;
     const cardH = 48;
     const gap = 8;
     let x = 12;
     const y = headerHeight + 12;
     for (const card of options.cards) {
+      ctx.font = `400 11px ${FONT}`;
+      const cardW = Math.max(96, ctx.measureText(card.label).width + 22);
       roundRect(ctx, x, y, cardW, cardH, 8, c.card, c.border);
       ctx.fillStyle = c.text;
       ctx.font = `700 20px ${FONT}`;
