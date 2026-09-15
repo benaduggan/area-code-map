@@ -6,10 +6,12 @@ import "./ShareBar.css";
 interface Props {
   counts: ReadonlyMap<string, number>;
   caption: string;
+  cards: { value: number; label: string }[];
+  legend: { color: string; label: string }[];
   getSvg: () => SVGSVGElement | null;
 }
 
-export function ShareBar({ counts, caption, getSvg }: Props) {
+export function ShareBar({ counts, caption, cards, legend, getSvg }: Props) {
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -43,10 +45,20 @@ export function ShareBar({ counts, caption, getSvg }: Props) {
     setBusy(true);
     try {
       const cs = getComputedStyle(document.documentElement);
+      const v = (name: string, fallback: string) => cs.getPropertyValue(name).trim() || fallback;
       const blob = await mapToPngBlob(svg, {
+        title: "Area Code Map",
         caption,
-        background: cs.getPropertyValue("--map-bg").trim() || "#ffffff",
-        textColor: cs.getPropertyValue("--fg").trim() || "#000000",
+        cards,
+        legend,
+        colors: {
+          background: v("--map-bg", "#ffffff"),
+          page: v("--bg", "#ffffff"),
+          card: v("--bg-elevated", "#f1f1ec"),
+          border: v("--border", "#e2e2dc"),
+          text: v("--fg", "#000000"),
+          muted: v("--muted", "#666666"),
+        },
       });
       downloadBlob(blob, "area-code-map.png");
       flash("Image downloaded.");
@@ -124,7 +136,8 @@ export function ShareBar({ counts, caption, getSvg }: Props) {
             </button>
           </div>
           <p className="skipped-note">
-            The image is the map as you see it now, with a caption, rendered in your browser.
+            The image shows the whole map with your stats and legend on it, rendered in your
+            browser.
           </p>
           {status && (
             <p className="share-status" role="status">

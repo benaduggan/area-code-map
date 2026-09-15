@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { displayCities, getAreaCode, type AreaCode } from "../../lib/areacodes";
 import type { ImportResult } from "../../lib/contacts";
 import { computeStats } from "../../lib/stats";
+import { COMPARE_LABELS } from "../../lib/compare";
 import { AreaCodeCard } from "../Detail/AreaCodeCard";
 import { NameList } from "../Detail/NameList";
 import { ShareBar } from "../Share/ShareBar";
@@ -19,6 +20,9 @@ interface Props {
   getSvg: () => SVGSVGElement | null;
   /** Import controls, rendered above the long list so they are easy to find. */
   addMore?: React.ReactNode;
+  /** Legend swatches for the exported image (count classes). */
+  scaleLegend: { color: string; label: string }[];
+  compareColors: Record<"mine" | "theirs" | "both", string>;
   /** Present when comparing against a shared map. */
   comparison?: { theirs: ReadonlyMap<string, number>; result: Comparison } | null;
 }
@@ -33,6 +37,8 @@ export function ResultsPanel({
   getSvg,
   addMore,
   comparison,
+  scaleLegend,
+  compareColors,
 }: Props) {
   const stats = useMemo(() => computeStats(result), [result]);
   const ranked = useMemo(() => {
@@ -91,6 +97,16 @@ export function ResultsPanel({
             in {stats.newest.inService}
           </li>
         )}
+        {stats.foreignCountries.length > 0 && (
+          <li>
+            Also:{" "}
+            {stats.foreignCountries
+              .slice(0, 4)
+              .map((f) => `${f.count} in ${f.country}`)
+              .join(", ")}
+            {stats.foreignCountries.length > 4 && `, and ${stats.foreignCountries.length - 4} more`}
+          </li>
+        )}
         {skippedCount > 0 && (
           <li className="muted">
             <a
@@ -102,7 +118,7 @@ export function ResultsPanel({
               }}
               title="See which numbers could not be placed"
             >
-              Not mapped: {summary.foreign > 0 && `${summary.foreign} outside North America`}
+              Not on the map: {summary.foreign > 0 && `${summary.foreign} outside North America`}
               {summary.foreign > 0 && summary.unrecognised > 0 && ", "}
               {summary.unrecognised > 0 && `${summary.unrecognised} unrecognised`} ›
             </a>
@@ -126,7 +142,24 @@ export function ResultsPanel({
 
       <ShareBar
         counts={result.counts}
-        caption={`${summary.nanp} numbers across ${result.counts.size} area codes · area code map`}
+        caption={`${summary.nanp} numbers across ${result.counts.size} area codes`}
+        cards={[
+          { value: summary.nanp, label: "numbers" },
+          { value: result.counts.size, label: "area codes" },
+          {
+            value: stats.regions,
+            label: stats.regions === 1 ? "state or province" : "states & provinces",
+          },
+          { value: stats.countries, label: stats.countries === 1 ? "country" : "countries" },
+        ]}
+        legend={
+          comparison
+            ? (["mine", "both", "theirs"] as const).map((c) => ({
+                color: compareColors[c],
+                label: COMPARE_LABELS[c],
+              }))
+            : scaleLegend
+        }
         getSvg={getSvg}
       />
       <SkippedDialog

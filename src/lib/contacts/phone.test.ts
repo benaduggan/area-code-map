@@ -44,8 +44,24 @@ describe("parseNumber", () => {
     expect(parseNumber("+1 876 555 0100")).toMatchObject({ kind: "nanp", number: { npa: "876" } });
   });
 
-  it("flags other countries", () => {
-    expect(parseNumber("+44 20 7946 0958")).toEqual({ kind: "foreign", e164: "+442079460958" });
+  it("flags other countries with their country", () => {
+    expect(parseNumber("+44 20 7946 0958")).toEqual({
+      kind: "foreign",
+      e164: "+442079460958",
+      country: "GB",
+    });
+    expect(parseNumber("011 49 30 901820")).toMatchObject({ kind: "foreign", country: "DE" });
+  });
+
+  it("recovers international numbers saved without a plus", () => {
+    expect(parseNumber("0044 20 7946 0958")).toMatchObject({ kind: "foreign", country: "GB" });
+    expect(parseNumber("442079460958")).toMatchObject({ kind: "foreign", country: "GB" });
+    expect(parseNumber("+61 2 9374 4000")).toMatchObject({ kind: "foreign", country: "AU" });
+  });
+
+  it("does not turn a mistyped US number into a foreign one", () => {
+    expect(parseNumber("612345678")).toEqual({ kind: "unrecognised" });
+    expect(parseNumber("1 000 555 0100")).toEqual({ kind: "unrecognised" });
   });
 
   it("rejects garbage, short numbers, and unknown area codes", () => {

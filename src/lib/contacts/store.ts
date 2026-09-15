@@ -1,4 +1,4 @@
-import type { ImportResult, NamedCount } from "./types";
+import type { ForeignNumber, ImportResult, NamedCount } from "./types";
 
 /**
  * Opt-in persistence of an import in this browser's localStorage: counts,
@@ -92,6 +92,21 @@ function strings(v: unknown): string[] {
   return Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : [];
 }
 
+/** Foreign numbers were plain E.164 strings before countries were recorded. */
+function foreignNumbers(v: unknown): ForeignNumber[] {
+  if (!Array.isArray(v)) return [];
+  const out: ForeignNumber[] = [];
+  for (const entry of v as unknown[]) {
+    if (typeof entry === "string") out.push({ e164: entry, country: null });
+    else if (entry && typeof entry === "object") {
+      const { e164, country } = entry as { e164?: unknown; country?: unknown };
+      if (typeof e164 === "string")
+        out.push({ e164, country: typeof country === "string" ? country : null });
+    }
+  }
+  return out;
+}
+
 function summaryFor(counts: Map<string, number>, partial?: Partial<ImportResult["summary"]>) {
   const nanp = [...counts.values()].reduce((a, b) => a + b, 0);
   return {
@@ -118,7 +133,7 @@ export function loadResult(): ImportResult | null {
       counts,
       names: readNames(parsed.names, counts),
       skipped: {
-        foreign: strings(parsed.skipped?.foreign),
+        foreign: foreignNumbers(parsed.skipped?.foreign),
         unrecognised: strings(parsed.skipped?.unrecognised),
       },
     };
