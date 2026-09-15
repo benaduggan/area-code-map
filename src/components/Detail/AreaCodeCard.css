@@ -56,3 +56,8 @@
   background: var(--bg-elevated);
   border-radius: 999px;
 }
+
+.card-badge-secondary {
+  font-weight: 400;
+  color: var(--muted);
+}

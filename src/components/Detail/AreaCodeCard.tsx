@@ -9,9 +9,11 @@ interface Props {
   extra?: React.ReactNode;
   /** A count shown at the right edge. */
   badge?: number;
+  /** The other person's count in compare mode. */
+  badgeSecondary?: number;
 }
 
-export function AreaCodeCard({ code, selected, onSelect, extra, badge }: Props) {
+export function AreaCodeCard({ code, selected, onSelect, extra, badge, badgeSecondary }: Props) {
   const cities = displayCities(code);
   const siblings = code.overlayComplex.filter((s) => s !== code.npa);
   return (
@@ -33,7 +35,14 @@ export function AreaCodeCard({ code, selected, onSelect, extra, badge }: Props) 
         </span>
         {extra}
       </span>
-      {badge !== undefined && <span className="card-badge">{badge.toLocaleString()}</span>}
+      {badge !== undefined && (
+        <span className="card-badge">
+          {badge.toLocaleString()}
+          {badgeSecondary !== undefined && (
+            <span className="card-badge-secondary"> · {badgeSecondary.toLocaleString()}</span>
+          )}
+        </span>
+      )}
     </button>
   );
 }

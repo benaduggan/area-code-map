@@ -1,5 +1,11 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { App } from "./App";
+import { encodeCounts } from "./lib/share/codec";
+
+afterEach(() => {
+  location.hash = "";
+  localStorage.clear();
+});
 
 describe("App", () => {
   it("renders the title and the map", () => {
@@ -33,6 +39,33 @@ describe("App", () => {
     expect((document.querySelector('[data-shape="312"]') as SVGPathElement).style.fill).toBe("");
     fireEvent.click(screen.getByRole("button", { name: "Forget everything" }));
     expect(screen.getByRole("heading", { name: "Light up your map" })).toBeInTheDocument();
+  });
+
+  it("shows a shared map from the URL hash and compares after import", () => {
+    location.hash =
+      "#" +
+      encodeCounts(
+        new Map([
+          ["919", 4],
+          ["312", 2],
+        ]),
+      );
+    render(<App />);
+    expect(screen.getByText(/viewing someone.s shared map/i)).toBeInTheDocument();
+    expect((document.querySelector('[data-shape="312"]') as SVGPathElement).style.fill).not.toBe(
+      "",
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Paste numbers" }));
+    fireEvent.change(screen.getByLabelText("Paste phone numbers"), {
+      target: { value: "919-555-0100, 212-555-0100" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Map these" }));
+    expect(screen.getByText(/Comparing with a shared map/)).toBeInTheDocument();
+    expect(screen.getByText(/You both know people in/)).toHaveTextContent("1 area code: 919");
+    expect(screen.getByRole("button", { name: "Copy share link" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Stop comparing" }));
+    expect(location.hash).toBe("");
+    expect(screen.queryByText(/Comparing with/)).toBeNull();
   });
 
   it("shows the codes on a clicked region", () => {

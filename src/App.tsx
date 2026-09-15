@@ -10,6 +10,11 @@ import { codesOnShape, countsByShape, primaryCodeOnShape, shapesForCode } from "
 import { searchAreaCodes } from "./lib/search";
 import { DARK_RAMP, LIGHT_RAMP, makeCountScale } from "./lib/choropleth";
 import { mergeResults, type ImportResult } from "./lib/contacts";
+import { countsFromHash } from "./lib/share/codec";
+import { COMPARE_DARK, COMPARE_LABELS, COMPARE_LIGHT, compareCounts } from "./lib/compare";
+import { computeStats } from "./lib/stats";
+import { getAreaCode } from "./lib/areacodes";
+import "./components/Share/ShareBar.css";
 import {
   clearStored,
   isRememberEnabled,
@@ -20,15 +25,22 @@ import {
 import { usePrefersDark } from "./lib/usePrefersDark";
 import "./App.css";
 
-function restoredResult(): ImportResult | null {
-  const counts = loadCounts();
-  if (!counts) return null;
+function resultFromCounts(counts: Map<string, number>): ImportResult {
   const nanp = [...counts.values()].reduce((a, b) => a + b, 0);
   return {
     summary: { source: "paste", contacts: 0, numbers: nanp, nanp, foreign: 0, unrecognised: 0 },
     counts,
     names: new Map(),
   };
+}
+
+function restoredResult(): ImportResult | null {
+  const counts = loadCounts();
+  return counts ? resultFromCounts(counts) : null;
+}
+
+function sharedFromLocation(): Map<string, number> | null {
+  return typeof location === "undefined" ? null : countsFromHash(location.hash);
 }
 
 export function App() {
@@ -38,7 +50,30 @@ export function App() {
   const [selectedCode, setSelectedCode] = useState<AreaCode | null>(null);
   const [result, setResult] = useState<ImportResult | null>(() => restoredResult());
   const [remember, setRemember] = useState(() => isRememberEnabled());
+  const [shared, setShared] = useState<Map<string, number> | null>(() => sharedFromLocation());
   const dark = usePrefersDark();
+
+  useEffect(() => {
+    const onHash = () => setShared(sharedFromLocation());
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, []);
+
+  const dismissShared = () => {
+    setShared(null);
+    if (location.hash) history.replaceState(null, "", location.pathname + location.search);
+  };
+
+  const comparing = Boolean(shared && result);
+  const comparison = useMemo(
+    () => (shared && result ? compareCounts(result.counts, shared) : null),
+    [shared, result],
+  );
+  const sharedResult = useMemo(() => (shared ? resultFromCounts(shared) : null), [shared]);
+  const sharedStats = useMemo(
+    () => (sharedResult ? computeStats(sharedResult) : null),
+    [sharedResult],
+  );
 
   useEffect(() => {
     if (result && remember) saveCounts(result);
@@ -61,18 +96,33 @@ export function App() {
     return s;
   }, [selectedCode, selectedShape]);
 
-  const shapeCounts = useMemo(() => (result ? countsByShape(result.counts) : null), [result]);
-  const scale = useMemo(() => (result ? makeCountScale(result.counts.values()) : null), [result]);
+  // What the map shows: my import, or a shared map when I have none yet.
+  const displayed = result ?? sharedResult;
+  const shapeCounts = useMemo(
+    () => (displayed ? countsByShape(displayed.counts) : null),
+    [displayed],
+  );
+  const scale = useMemo(
+    () => (displayed ? makeCountScale(displayed.counts.values()) : null),
+    [displayed],
+  );
   const ramp = dark ? DARK_RAMP : LIGHT_RAMP;
+  const compareColors = dark ? COMPARE_DARK : COMPARE_LIGHT;
 
   const fillFor = useMemo(() => {
+    if (comparison) {
+      return (shapeId: string) => {
+        const c = comparison.shapeClass.get(shapeId);
+        return c ? compareColors[c] : undefined;
+      };
+    }
     if (!shapeCounts || !scale) return undefined;
     return (shapeId: string) => {
       const n = shapeCounts.get(shapeId);
       if (!n) return undefined;
       return ramp[scale.classFor(n)];
     };
-  }, [shapeCounts, scale, ramp]);
+  }, [comparison, compareColors, shapeCounts, scale, ramp]);
 
   const selectCode = (code: AreaCode) => {
     setSelectedCode(code);
@@ -107,6 +157,37 @@ export function App() {
 
   const shapeCodes = selectedShape ? codesOnShape(selectedShape) : [];
 
+  const sharedBanner = shared && sharedResult && sharedStats && (
+    <div className="compare-banner" role="status">
+      <p>
+        {comparing ? (
+          <>
+            Comparing with a shared map of <strong>{sharedResult.summary.nanp}</strong> numbers in{" "}
+            <strong>{shared.size}</strong> area codes.
+          </>
+        ) : (
+          <>
+            You&rsquo;re viewing someone&rsquo;s shared map:{" "}
+            <strong>{sharedResult.summary.nanp}</strong> numbers in <strong>{shared.size}</strong>{" "}
+            area codes
+            {sharedStats.top && (
+              <>
+                , mostly <strong>{sharedStats.top.npa}</strong> ({sharedStats.top.regionName})
+              </>
+            )}
+            . Add your own contacts below to compare.
+          </>
+        )}
+      </p>
+      <button type="button" className="btn" onClick={dismissShared}>
+        {comparing ? "Stop comparing" : "Dismiss"}
+      </button>
+    </div>
+  );
+
+  const badgeFor = (npa: string) =>
+    result ? result.counts.get(npa) : shared ? shared.get(npa) : undefined;
+
   return (
     <div className="app">
       <header className="app-header">
@@ -117,6 +198,7 @@ export function App() {
       <div className="layout">
         <aside className="sidebar">
           <SearchBox value={query} onChange={setQuery} />
+          {!showingSearch && !selectedShape && sharedBanner}
 
           {showingSearch ? (
             <section className="panel" aria-live="polite">
@@ -132,7 +214,7 @@ export function App() {
                     code={code}
                     selected={selectedCode?.npa === code.npa}
                     onSelect={selectCode}
-                    badge={result?.counts.get(code.npa)}
+                    badge={badgeFor(code.npa)}
                   />
                 ))}
               </div>
@@ -151,7 +233,8 @@ export function App() {
                     key={code.npa}
                     code={code}
                     onSelect={selectCode}
-                    badge={result?.counts.get(code.npa)}
+                    badge={badgeFor(code.npa)}
+                    badgeSecondary={comparing ? (shared!.get(code.npa) ?? 0) : undefined}
                     extra={
                       result?.names.get(code.npa)?.length ? (
                         <span className="card-names">{result.names.get(code.npa)!.join(", ")}</span>
@@ -170,8 +253,25 @@ export function App() {
                 onForget={forget}
                 remember={remember}
                 onRememberChange={handleRemember}
+                getSvg={() => mapRef.current?.getSvg() ?? null}
+                comparison={comparison && shared ? { theirs: shared, result: comparison } : null}
               />
               <ImportPanel onImport={handleImport} compact />
+            </div>
+          ) : shared && sharedResult ? (
+            <div className="panel">
+              <ImportPanel onImport={handleImport} compact />
+              <h2 className="panel-title">Their area codes</h2>
+              <div className="card-list">
+                {[...shared.entries()]
+                  .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+                  .map(([npa, count]) => {
+                    const code = getAreaCode(npa);
+                    return code ? (
+                      <AreaCodeCard key={npa} code={code} onSelect={selectCode} badge={count} />
+                    ) : null;
+                  })}
+              </div>
             </div>
           ) : (
             <div className="panel">
@@ -192,17 +292,33 @@ export function App() {
               const primary = primaryCodeOnShape(shapeId);
               if (!primary) return shapeId;
               const n = shapeCounts?.get(shapeId);
+              const cls = comparison?.shapeClass.get(shapeId);
               return (
                 <>
                   <strong>{overlayLabel(primary)}</strong>
                   <br />
                   {primary.regionName}
-                  {n ? ` · ${n} ${n === 1 ? "number" : "numbers"}` : ""}
+                  {cls
+                    ? ` · ${COMPARE_LABELS[cls]}`
+                    : n
+                      ? ` · ${n} ${n === 1 ? "number" : "numbers"}`
+                      : ""}
                 </>
               );
             }}
           />
-          {scale && <Legend scale={scale} ramp={ramp} />}
+          {comparison ? (
+            <div className="legend" aria-label="Compare legend">
+              {(["mine", "both", "theirs"] as const).map((c) => (
+                <span key={c} className="legend-item">
+                  <span className="legend-swatch" style={{ background: compareColors[c] }} />
+                  {COMPARE_LABELS[c]}
+                </span>
+              ))}
+            </div>
+          ) : (
+            scale && <Legend scale={scale} ramp={ramp} />
+          )}
         </main>
       </div>
 

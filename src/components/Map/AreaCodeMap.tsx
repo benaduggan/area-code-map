@@ -28,6 +28,7 @@ export interface AreaCodeMapProps {
 export interface AreaCodeMapHandle {
   zoomToShapes: (shapeIds: readonly string[]) => void;
   resetZoom: () => void;
+  getSvg: () => SVGSVGElement | null;
 }
 
 const MIN_ZOOM = 1;
@@ -106,6 +107,7 @@ export const AreaCodeMap = forwardRef<AreaCodeMapHandle, AreaCodeMapProps>(funct
         const z = zoomRef.current;
         if (svg && z) select(svg).transition().duration(400).call(z.transform, zoomIdentity);
       },
+      getSvg: () => svgRef.current,
     }),
     [zoomToBounds],
   );
