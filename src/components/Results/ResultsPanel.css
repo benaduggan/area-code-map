@@ -57,3 +57,9 @@
   font-size: 0.85rem;
   color: var(--fg);
 }
+
+.remember-hint {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--muted);
+}

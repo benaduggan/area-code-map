@@ -1,0 +1,78 @@
+.privacy-dialog {
+  width: min(40rem, calc(100vw - 2rem));
+  max-height: calc(100vh - 2rem);
+  padding: 0;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 0.8rem;
+  box-shadow: 0 20px 60px rgb(0 0 0 / 0.3);
+}
+
+.privacy-dialog::backdrop {
+  background: rgb(0 0 0 / 0.45);
+}
+
+.privacy-panel {
+  padding: 1.25rem 1.5rem 1.5rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.privacy-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+}
+
+.privacy-head h2 {
+  margin: 0;
+  font-size: 1.3rem;
+}
+
+.privacy-panel h3 {
+  margin: 1.25rem 0 0.4rem;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.privacy-panel ul {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.privacy-panel li {
+  margin: 0.35rem 0;
+}
+
+.privacy-status {
+  margin: 0.75rem 0 0;
+  padding: 0.6rem 0.8rem;
+  background: var(--bg-elevated);
+  border-radius: 0.5rem;
+}
+
+.privacy-foot {
+  margin: 0.75rem 0 0;
+  color: var(--muted);
+}
+
+.privacy-panel kbd {
+  padding: 0.05rem 0.35rem;
+  font-family: inherit;
+  font-size: 0.85em;
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 0.3rem;
+}
+
+.privacy-panel code {
+  font-size: 0.9em;
+}
+
+.privacy-panel a {
+  color: var(--accent);
+}

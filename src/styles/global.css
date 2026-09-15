@@ -12,6 +12,7 @@
   --map-hover: #b9c6d6;
   --map-highlight: #ffd166;
   --danger: #b42318;
+  --ok: #1a7f37;
   font-family:
     system-ui,
     -apple-system,
@@ -35,6 +36,7 @@
     --map-hover: #4a5568;
     --map-highlight: #d9a43a;
     --danger: #f97066;
+    --ok: #3fb950;
   }
 }
 
