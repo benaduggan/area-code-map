@@ -93,13 +93,18 @@ export function ImportPanel({ onImport, compact = false }: Props) {
 
       <div className="import-actions">
         {canPick && (
-          <button type="button" className="btn btn-primary" onClick={handlePick} disabled={busy}>
+          <button
+            type="button"
+            className={"btn" + (compact ? "" : " btn-primary")}
+            onClick={handlePick}
+            disabled={busy}
+          >
             Choose from contacts
           </button>
         )}
         <button
           type="button"
-          className={"btn" + (canPick ? "" : " btn-primary")}
+          className={"btn" + (canPick || compact ? "" : " btn-primary")}
           onClick={() => fileRef.current?.click()}
           disabled={busy}
         >
@@ -142,7 +147,11 @@ export function ImportPanel({ onImport, compact = false }: Props) {
             onChange={(e) => setPasted(e.target.value)}
             aria-label="Paste phone numbers"
           />
-          <button type="submit" className="btn btn-primary" disabled={!pasted.trim()}>
+          <button
+            type="submit"
+            className={"btn" + (compact ? "" : " btn-primary")}
+            disabled={!pasted.trim()}
+          >
             Map these
           </button>
         </form>
