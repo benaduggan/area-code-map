@@ -1,6 +1,9 @@
 .map-container {
   position: relative;
-  width: 100%;
+  /* Fill the column, but never taller than the viewport minus the chrome
+     around it, so ultrawide screens do not get a map that scrolls. */
+  width: min(100%, calc((100vh - 11rem) * 975 / 640));
+  margin: 0 auto;
   aspect-ratio: 975 / 640;
   background: var(--map-bg);
   border-radius: 0.75rem;
@@ -61,18 +64,36 @@
   pointer-events: none;
 }
 
-.map-reset {
+.map-controls {
   position: absolute;
   top: 0.75rem;
   right: 0.75rem;
-  padding: 0.35rem 0.7rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.map-control {
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
   font: inherit;
-  font-size: 0.8rem;
+  font-size: 1.1rem;
+  line-height: 1;
   color: var(--fg);
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: 0.4rem;
   cursor: pointer;
+}
+
+.map-control:hover:not(:disabled) {
+  border-color: var(--muted);
+}
+
+.map-control:disabled {
+  opacity: 0.4;
+  cursor: default;
 }
 
 .map-tooltip {

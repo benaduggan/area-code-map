@@ -9,7 +9,7 @@ const base = process.env.VITE_BASE ?? "/area-code-map/";
 
 /**
  * The privacy promise, enforced by the browser: no connections anywhere but
- * this origin, no third-party scripts, no framing. Applied to the production
+ * this origin, no third-party scripts. (frame-ancestors cannot be set from a meta tag.) Applied to the production
  * build only because the dev server's React refresh preamble is inline.
  */
 const CSP = [
@@ -24,7 +24,6 @@ const CSP = [
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'none'",
-  "frame-ancestors 'none'",
 ].join("; ");
 
 function cspPlugin(): Plugin {

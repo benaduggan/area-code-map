@@ -2,8 +2,70 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  max-width: 1800px;
+  margin: 0 auto;
   padding: 1rem clamp(1rem, 3vw, 2rem);
   gap: 1rem;
+}
+
+.app-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.header-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.coffee {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1c1c1a;
+  background: #ffdd00;
+  border-radius: 999px;
+  text-decoration: none;
+}
+
+.coffee:hover {
+  background: #ffe64d;
+}
+
+.net-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+
+.net-badge::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--muted);
+}
+
+.net-badge.is-offline {
+  color: var(--fg);
+  border-color: var(--accent);
+}
+
+.net-badge.is-offline::before {
+  background: var(--accent);
 }
 
 .app-header h1 {

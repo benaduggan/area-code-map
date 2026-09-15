@@ -23,6 +23,7 @@ import {
   setRememberEnabled,
 } from "./lib/contacts/store";
 import { usePrefersDark } from "./lib/usePrefersDark";
+import { useOnline } from "./lib/useOnline";
 import "./App.css";
 
 function resultFromCounts(counts: Map<string, number>): ImportResult {
@@ -52,6 +53,7 @@ export function App() {
   const [remember, setRemember] = useState(() => isRememberEnabled());
   const [shared, setShared] = useState<Map<string, number> | null>(() => sharedFromLocation());
   const dark = usePrefersDark();
+  const online = useOnline();
 
   useEffect(() => {
     const onHash = () => setShared(sharedFromLocation());
@@ -191,8 +193,30 @@ export function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1>Area Code Map</h1>
-        <p className="tagline">See where the people you know are from.</p>
+        <div>
+          <h1>Area Code Map</h1>
+          <p className="tagline">See where the people you know are from.</p>
+        </div>
+        <div className="header-links">
+          <span
+            className={"net-badge" + (online ? "" : " is-offline")}
+            title={
+              online
+                ? "This page never sends your contacts anywhere. Try airplane mode: it keeps working."
+                : "You are offline and everything still works, because nothing here needs the network."
+            }
+          >
+            {online ? "Works offline" : "Offline · still working"}
+          </span>
+          <a
+            className="coffee"
+            href="https://buymeacoffee.com/benaduggan"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            ☕ Buy me a coffee
+          </a>
+        </div>
       </header>
 
       <div className="layout">
