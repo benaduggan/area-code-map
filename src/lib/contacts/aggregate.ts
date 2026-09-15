@@ -1,5 +1,5 @@
 import { parseNumber } from "./phone";
-import type { Contact, ImportResult, ImportSource, NamedCount } from "./types";
+import type { Contact, ForeignNumber, ImportResult, ImportSource, NamedCount } from "./types";
 
 /**
  * Reduce contacts to per-area-code counts. Numbers are de-duplicated by their
@@ -11,7 +11,7 @@ export function aggregateContacts(contacts: Contact[], source: ImportSource): Im
   const seen = new Set<string>();
   const counts = new Map<string, number>();
   const names = new Map<string, NamedCount[]>();
-  const skipped = { foreign: [] as string[], unrecognised: [] as string[] };
+  const skipped = { foreign: [] as ForeignNumber[], unrecognised: [] as string[] };
 
   for (const contact of contacts) {
     for (const raw of contact.phones) {
@@ -24,7 +24,7 @@ export function aggregateContacts(contacts: Contact[], source: ImportSource): Im
       if (seen.has(key)) continue;
       seen.add(key);
       if (parsed.kind === "foreign") {
-        skipped.foreign.push(parsed.e164);
+        skipped.foreign.push({ e164: parsed.e164, country: parsed.country });
         continue;
       }
       const { npa } = parsed.number;
@@ -65,7 +65,7 @@ export function mergeResults(results: ImportResult[]): ImportResult | null {
     foreign: 0,
     unrecognised: 0,
   };
-  const skipped = { foreign: [] as string[], unrecognised: [] as string[] };
+  const skipped = { foreign: [] as ForeignNumber[], unrecognised: [] as string[] };
   for (const r of results) {
     skipped.foreign.push(...r.skipped.foreign);
     skipped.unrecognised.push(...r.skipped.unrecognised);

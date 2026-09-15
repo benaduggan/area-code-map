@@ -19,7 +19,7 @@ export function extractPhoneCandidates(text: string): string[] {
 
 export type ParsedNumber =
   | { kind: "nanp"; number: NanpNumber }
-  | { kind: "foreign"; e164: string }
+  | { kind: "foreign"; e164: string; country: string | null }
   | { kind: "unrecognised" };
 
 /** Strip common vCard/URI wrappers and extension suffixes before parsing. */
@@ -39,12 +39,29 @@ export function cleanPhoneString(raw: string): string {
 export function parseNumber(raw: string): ParsedNumber {
   const cleaned = cleanPhoneString(raw);
   if (!cleaned) return { kind: "unrecognised" };
-  const parsed = parsePhoneNumberFromString(cleaned, "US");
-  if (!parsed) return { kind: "unrecognised" };
-  if (parsed.countryCallingCode !== "1") return { kind: "foreign", e164: parsed.number };
-  const national = parsed.nationalNumber;
-  if (national.length !== 10) return { kind: "unrecognised" };
-  const npa = national.slice(0, 3);
-  if (!isAreaCode(npa)) return { kind: "unrecognised" };
-  return { kind: "nanp", number: { e164: parsed.number, npa } };
+
+  const first = parsePhoneNumberFromString(cleaned, "US");
+  if (first && first.countryCallingCode === "1") {
+    const national = first.nationalNumber;
+    if (national.length === 10 && isAreaCode(national.slice(0, 3))) {
+      return { kind: "nanp", number: { e164: first.number, npa: national.slice(0, 3) } };
+    }
+  } else if (first && first.isPossible()) {
+    // A "+" or "011" prefix made the country explicit.
+    return { kind: "foreign", e164: first.number, country: first.country ?? null };
+  }
+
+  // Not a North American number. Contacts saved abroad often lack the "+":
+  // "0044 20 …" (00 is the international prefix outside North America) or
+  // just "44 20 …". Retry as international, but only accept a fully valid
+  // number so a mistyped US number does not become a foreign one.
+  const digits = cleaned.replace(/\D/g, "");
+  const intl = digits.startsWith("00") ? digits.slice(2) : digits;
+  if (intl.length >= 8 && intl.length <= 15 && !cleaned.startsWith("+")) {
+    const retry = parsePhoneNumberFromString("+" + intl);
+    if (retry && retry.countryCallingCode !== "1" && retry.isValid()) {
+      return { kind: "foreign", e164: retry.number, country: retry.country ?? null };
+    }
+  }
+  return { kind: "unrecognised" };
 }

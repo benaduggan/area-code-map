@@ -309,6 +309,10 @@ export function App() {
                 onRememberChange={handleRemember}
                 getSvg={() => mapRef.current?.getSvg() ?? null}
                 addMore={<ImportPanel onImport={handleImport} compact />}
+                scaleLegend={
+                  scale ? scale.labels.map((label, i) => ({ color: ramp[i]!, label })) : []
+                }
+                compareColors={compareColors}
                 comparison={comparison && shared ? { theirs: shared, result: comparison } : null}
               />
             </div>

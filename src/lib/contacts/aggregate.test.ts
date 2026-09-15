@@ -16,7 +16,10 @@ describe("aggregateContacts", () => {
       { name: "Jane Doe", count: 1 },
     ]);
     expect(result.names.get("416")).toBeUndefined();
-    expect(result.skipped).toEqual({ foreign: ["+442079460958"], unrecognised: ["12345"] });
+    expect(result.skipped).toEqual({
+      foreign: [{ e164: "+442079460958", country: "GB" }],
+      unrecognised: ["12345"],
+    });
     expect(result.summary).toEqual({
       source: "paste",
       contacts: 3,

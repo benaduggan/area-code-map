@@ -45,9 +45,15 @@ export interface NamedCount {
   count: number;
 }
 
+export interface ForeignNumber {
+  e164: string;
+  /** ISO 3166-1 alpha-2 code, or null when the calling code is shared by several countries. */
+  country: string | null;
+}
+
 export interface SkippedNumbers {
-  /** E.164 numbers outside +1. */
-  foreign: string[];
+  /** Valid numbers outside +1, with the country they belong to. */
+  foreign: ForeignNumber[];
   /** Raw strings that did not parse, or +1 numbers with an unknown area code. */
   unrecognised: string[];
 }

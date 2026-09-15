@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import type { SkippedNumbers } from "../../lib/contacts";
+import { countryName } from "../../lib/stats";
 
 interface Props {
   open: boolean;
@@ -47,7 +48,14 @@ export function SkippedDialog({ open, onClose, skipped }: Props) {
             <p className="skipped-note">
               Valid numbers whose country code is not +1, so they have no North American area code.
             </p>
-            <List items={skipped.foreign} />
+            {groupByCountry(skipped.foreign).map((g) => (
+              <div key={g.country}>
+                <p className="skipped-country">
+                  {g.country} ({g.items.length})
+                </p>
+                <List items={g.items} />
+              </div>
+            ))}
           </>
         )}
         {skipped.unrecognised.length > 0 && (
@@ -63,6 +71,19 @@ export function SkippedDialog({ open, onClose, skipped }: Props) {
       </div>
     </dialog>
   );
+}
+
+function groupByCountry(
+  foreign: SkippedNumbers["foreign"],
+): { country: string; items: string[] }[] {
+  const groups = new Map<string, string[]>();
+  for (const f of foreign) {
+    const name = countryName(f.country);
+    groups.set(name, [...(groups.get(name) ?? []), f.e164]);
+  }
+  return [...groups.entries()]
+    .map(([country, items]) => ({ country, items }))
+    .sort((a, b) => b.items.length - a.items.length || a.country.localeCompare(b.country));
 }
 
 function List({ items }: { items: string[] }) {

@@ -1,20 +1,34 @@
 /**
- * Render the live map SVG to a PNG in the browser. CSS classes do not carry
- * into a serialized SVG, so computed fill/stroke are copied onto each mark
- * before serializing. Nothing here touches the network.
+ * Render the map to a PNG in the browser: the whole map at its home view
+ * (whatever the current pan/zoom), with the stat cards, the legend, a title
+ * and a caption painted on top. CSS classes do not carry into a serialized
+ * SVG, so computed fill/stroke are copied onto each mark first. Nothing here
+ * touches the network.
  */
 const EXPORT_SCALE = 2;
+const FONT = "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
+
+export interface PngColors {
+  background: string;
+  page: string;
+  card: string;
+  border: string;
+  text: string;
+  muted: string;
+}
 
 export interface PngOptions {
-  caption?: string;
-  background: string;
-  textColor: string;
+  title: string;
+  caption: string;
+  cards: { value: number; label: string }[];
+  legend: { color: string; label: string }[];
+  colors: PngColors;
 }
 
 export async function mapToPngBlob(svg: SVGSVGElement, options: PngOptions): Promise<Blob> {
   const clone = svg.cloneNode(true) as SVGSVGElement;
-  const originals = svg.querySelectorAll<SVGElement>("path, circle, rect, text");
-  const copies = clone.querySelectorAll<SVGElement>("path, circle, rect, text");
+  const originals = svg.querySelectorAll<SVGElement>("path, circle, rect, text, line");
+  const copies = clone.querySelectorAll<SVGElement>("path, circle, rect, text, line");
   originals.forEach((el, i) => {
     const copy = copies[i];
     if (!copy) return;
@@ -24,19 +38,22 @@ export async function mapToPngBlob(svg: SVGSVGElement, options: PngOptions): Pro
     copy.setAttribute("stroke", cs.stroke);
     copy.setAttribute("stroke-width", cs.strokeWidth);
     copy.setAttribute("stroke-linejoin", cs.strokeLinejoin);
+    copy.setAttribute("opacity", cs.opacity);
     if (el instanceof SVGTextElement) {
       copy.setAttribute("font-size", cs.fontSize);
       copy.setAttribute("font-family", cs.fontFamily);
     }
-    // Inline fills set via style attribute survive cloning; drop transitions.
     copy.style.transition = "";
   });
+  // Show the whole map, not the current zoom.
+  clone.querySelector(".main")?.setAttribute("transform", "");
   clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
 
   const viewBox = svg.viewBox.baseVal;
   const width = viewBox.width;
   const height = viewBox.height;
-  const captionHeight = options.caption ? 40 : 0;
+  const headerHeight = 44;
+  const footerHeight = 36;
   clone.setAttribute("width", String(width));
   clone.setAttribute("height", String(height));
 
@@ -46,19 +63,77 @@ export async function mapToPngBlob(svg: SVGSVGElement, options: PngOptions): Pro
     const img = await loadImage(url);
     const canvas = document.createElement("canvas");
     canvas.width = width * EXPORT_SCALE;
-    canvas.height = (height + captionHeight) * EXPORT_SCALE;
+    canvas.height = (headerHeight + height + footerHeight) * EXPORT_SCALE;
     const ctx = canvas.getContext("2d");
     if (!ctx) throw new Error("Canvas unavailable");
     ctx.scale(EXPORT_SCALE, EXPORT_SCALE);
-    ctx.fillStyle = options.background;
-    ctx.fillRect(0, 0, width, height + captionHeight);
-    ctx.drawImage(img, 0, 0, width, height);
-    if (options.caption) {
-      ctx.fillStyle = options.textColor;
-      ctx.font = "600 16px system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
-      ctx.textBaseline = "middle";
-      ctx.fillText(options.caption, 16, height + captionHeight / 2);
+    const c = options.colors;
+
+    ctx.fillStyle = c.page;
+    ctx.fillRect(0, 0, width, headerHeight + height + footerHeight);
+    ctx.fillStyle = c.background;
+    ctx.fillRect(0, headerHeight, width, height);
+    ctx.drawImage(img, 0, headerHeight, width, height);
+
+    // Title
+    ctx.fillStyle = c.text;
+    ctx.textBaseline = "middle";
+    ctx.font = `700 20px ${FONT}`;
+    ctx.fillText(options.title, 16, headerHeight / 2);
+    ctx.fillStyle = c.muted;
+    ctx.font = `400 13px ${FONT}`;
+    ctx.fillText(
+      "See where the people you know are from.",
+      16 + ctx.measureText(options.title).width + 60,
+      headerHeight / 2,
+    );
+
+    // Stat cards, top-left of the map (open ocean in this projection)
+    const cardW = 104;
+    const cardH = 48;
+    const gap = 8;
+    let x = 12;
+    const y = headerHeight + 12;
+    for (const card of options.cards) {
+      roundRect(ctx, x, y, cardW, cardH, 8, c.card, c.border);
+      ctx.fillStyle = c.text;
+      ctx.font = `700 20px ${FONT}`;
+      ctx.textBaseline = "alphabetic";
+      ctx.fillText(card.value.toLocaleString(), x + 10, y + 24);
+      ctx.fillStyle = c.muted;
+      ctx.font = `400 11px ${FONT}`;
+      ctx.fillText(card.label, x + 10, y + 39);
+      x += cardW + gap;
     }
+
+    // Legend, under the cards
+    if (options.legend.length) {
+      const ly = y + cardH + 10;
+      let lx = 12;
+      ctx.textBaseline = "middle";
+      ctx.font = `400 12px ${FONT}`;
+      for (const item of options.legend) {
+        roundRect(ctx, lx, ly, 12, 12, 2, item.color, null);
+        ctx.fillStyle = c.text;
+        ctx.fillText(item.label, lx + 17, ly + 6);
+        lx += 17 + ctx.measureText(item.label).width + 14;
+      }
+    }
+
+    // Caption
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = c.text;
+    ctx.font = `600 14px ${FONT}`;
+    ctx.fillText(options.caption, 16, headerHeight + height + footerHeight / 2);
+    ctx.fillStyle = c.muted;
+    ctx.font = `400 12px ${FONT}`;
+    const site = location.host + location.pathname.replace(/\/$/, "");
+    ctx.fillText(
+      site,
+      width - 16 - ctx.measureText(site).width,
+      headerHeight + height + footerHeight / 2,
+    );
+
     return await new Promise<Blob>((resolve, reject) =>
       canvas.toBlob(
         (b) => (b ? resolve(b) : reject(new Error("PNG encoding failed"))),
@@ -67,6 +142,27 @@ export async function mapToPngBlob(svg: SVGSVGElement, options: PngOptions): Pro
     );
   } finally {
     URL.revokeObjectURL(url);
+  }
+}
+
+function roundRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number,
+  fill: string,
+  stroke: string | null,
+): void {
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, h, r);
+  ctx.fillStyle = fill;
+  ctx.fill();
+  if (stroke) {
+    ctx.strokeStyle = stroke;
+    ctx.lineWidth = 1;
+    ctx.stroke();
   }
 }
 

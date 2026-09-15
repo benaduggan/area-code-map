@@ -33,7 +33,10 @@ describe("store", () => {
       { name: "Jane", count: 1 },
     ]);
     expect(back.summary).toEqual(r.summary);
-    expect(back.skipped).toEqual({ foreign: ["+442079460958"], unrecognised: [] });
+    expect(back.skipped).toEqual({
+      foreign: [{ e164: "+442079460958", country: "GB" }],
+      unrecognised: [],
+    });
   });
 
   it("reads names saved by the older string-only format", () => {
