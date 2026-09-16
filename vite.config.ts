@@ -5,7 +5,7 @@ import { VitePWA } from "vite-plugin-pwa";
 
 // GitHub Pages serves project sites under /<repo>/. Set VITE_BASE to "/" when
 // hosting at a custom domain.
-const base = process.env.VITE_BASE ?? "/area-code-map/";
+const base = process.env.VITE_BASE ?? "/hometowns/";
 
 /**
  * The privacy promise, enforced by the browser: no connections anywhere but

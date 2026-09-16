@@ -56,7 +56,7 @@ export function PrivacyDialog({ open, onClose, online }: Props) {
             {tx("privacy.contacts.noServer", {
               link: (
                 <a
-                  href="https://github.com/benaduggan/area-code-map"
+                  href="https://github.com/benaduggan/hometowns"
                   target="_blank"
                   rel="noopener noreferrer"
                 >

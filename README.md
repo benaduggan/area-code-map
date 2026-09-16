@@ -4,7 +4,7 @@ Most people keep their first phone number. Their area code tells a story.
 Drop in your contacts and see how far your contacts reach across North America.
 Everything runs locally in your browser, and nothing is uploaded or scraped.
 
-**Live site:** https://benaduggan.github.io/area-code-map/
+**Live site:** https://benaduggan.github.io/hometowns/
 
 ## What it does
 

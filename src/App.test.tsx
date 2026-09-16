@@ -78,7 +78,7 @@ describe("App", () => {
     getStarted();
     fireEvent.change(screen.getByLabelText(en["welcome.homeLabel"]), { target: { value: "312" } });
     fireEvent.click(screen.getByLabelText(/remember this on this device/i));
-    expect(localStorage.getItem("area-code-map:home")).toBe("312");
+    expect(localStorage.getItem("hometowns:home")).toBe("312");
     unmount();
 
     render(<App />);
@@ -87,7 +87,7 @@ describe("App", () => {
     expect(screen.getByText(/^Home:/)).toHaveTextContent("312");
     pasteNumbers("312-555-0100, 919-555-0100");
     fireEvent.click(screen.getByRole("button", { name: "Forget everything" }));
-    expect(localStorage.getItem("area-code-map:home")).toBeNull();
+    expect(localStorage.getItem("hometowns:home")).toBeNull();
     expect(screen.getByText(en["welcome.tagline"])).toBeInTheDocument();
   });
 
@@ -176,7 +176,7 @@ describe("App", () => {
     expect(screen.getByText(/Most common:/)).toHaveTextContent("919");
     expect(document.querySelector('[data-home="mine"]')).not.toBeNull();
     // An example is never written to storage, even with remembering on.
-    expect(localStorage.getItem("area-code-map:import:v2")).toBeNull();
+    expect(localStorage.getItem("hometowns:import:v2")).toBeNull();
 
     fireEvent.click(screen.getAllByRole("button", { name: en["examples.leave"] })[0]!);
     expect(screen.queryByRole("heading", { name: "Maya’s map" })).toBeNull();
@@ -209,7 +209,7 @@ describe("App", () => {
     skipWelcome();
     pasteNumbers("919-555-0100, 212-555-0100");
     fireEvent.click(screen.getByLabelText(/remember this map on this device/i));
-    const stored = localStorage.getItem("area-code-map:import:v2");
+    const stored = localStorage.getItem("hometowns:import:v2");
     expect(stored).toContain("212");
 
     chooseExample(/^Maya Grew up/);
@@ -219,7 +219,7 @@ describe("App", () => {
     // Still the visitor's own map, and their storage is untouched.
     expect(screen.getByRole("heading", { name: "Your map" })).toBeInTheDocument();
     expect(screen.getByText(/You both know people in/)).toHaveTextContent("919");
-    expect(localStorage.getItem("area-code-map:import:v2")).toBe(stored);
+    expect(localStorage.getItem("hometowns:import:v2")).toBe(stored);
 
     fireEvent.click(screen.getByRole("button", { name: "Stop comparing" }));
     expect(screen.queryByRole("status")).toBeNull();

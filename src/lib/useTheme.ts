@@ -3,7 +3,7 @@ import { usePrefersDark } from "./usePrefersDark";
 
 export type Theme = "system" | "light" | "dark";
 
-const KEY = "area-code-map:theme";
+const KEY = "hometowns:theme";
 
 function readStored(): Theme {
   try {

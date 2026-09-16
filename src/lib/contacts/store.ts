@@ -7,10 +7,10 @@ import type { ForeignNumber, ImportResult, NamedCount } from "./types";
  * browser to any account. Every access is wrapped because storage can be
  * unavailable (private mode, blocked site data).
  */
-const KEY = "area-code-map:import:v2";
-const LEGACY_KEY = "area-code-map:counts:v1";
-const OPT_IN_KEY = "area-code-map:remember";
-const HOME_KEY = "area-code-map:home";
+const KEY = "hometowns:import:v2";
+const LEGACY_KEY = "hometowns:counts:v1";
+const OPT_IN_KEY = "hometowns:remember";
+const HOME_KEY = "hometowns:home";
 
 interface Stored {
   summary: ImportResult["summary"];

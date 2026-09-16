@@ -15,7 +15,7 @@ import { chromium } from "playwright-core";
 import { en } from "../src/lib/i18n/en";
 
 const PORT = 4179;
-const BASE = `http://localhost:${PORT}/area-code-map/`;
+const BASE = `http://localhost:${PORT}/hometowns/`;
 // Locally, point CHROME_PATH at a Chromium binary; in CI `playwright install chromium` provides one.
 const CHROME = process.env.CHROME_PATH;
 
@@ -102,7 +102,7 @@ const shareUrl = await page.evaluate(() => navigator.clipboard.readText());
 const parsed = new URL(shareUrl);
 if (
   parsed.origin !== `http://localhost:${PORT}` ||
-  parsed.pathname !== "/area-code-map/" ||
+  parsed.pathname !== "/hometowns/" ||
   parsed.search !== ""
 ) {
   fail(`unexpected share URL ${shareUrl}`);
