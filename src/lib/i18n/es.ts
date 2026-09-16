@@ -69,7 +69,6 @@ export const es: Messages = {
 
   // Welcome, screen one
   "welcome.tagline": "La historia de tus contactos",
-  "welcome.lead": "Su código de área cuenta una historia",
   "welcome.body":
     "Casi nadie cambia su primer número de teléfono. El código de área que te toca de adolescente puede seguirte por cada etapa de la vida, y suele contar la historia de dónde eres, no de dónde vives ahora. Así que si proyectamos tus contactos en un mapa, puedes ver un retrato curioso de dónde empezó cada quien.",
   "welcome.privacy":
@@ -144,7 +143,6 @@ export const es: Messages = {
   "results.notMapped.foreign": "{count} fuera de Norteamérica",
   "results.notMapped.unrecognised": "{count} sin reconocer",
   "results.notMapped.tollFree": "{count} gratuitos",
-  "results.shareCaption": "{numbers} números en {codes} códigos de área",
 
   // Names under an area code
   "names.unnamed.one": "{count} número sin nombre",
@@ -189,8 +187,6 @@ export const es: Messages = {
   "share.packed":
     "{codes} códigos de área comprimidos en {chars} caracteres después del {hash}, que los navegadores nunca envían a ningún servidor.",
   "share.copy": "Copiar enlace",
-  "share.imageNote":
-    "La imagen muestra el mapa completo con tus estadísticas y la leyenda, generada en tu navegador.",
   "share.homeLeftOut": " La marca de tu casa queda fuera.",
   "share.copied": "Enlace copiado.",
   "share.copyFailed":
@@ -200,8 +196,6 @@ export const es: Messages = {
 
   // Numbers that could not be placed
   "skipped.title": "Lo que no está en el mapa",
-  "skipped.intro":
-    "Los listamos para que puedas detectar un error de tipeo o un número que valga la pena corregir en tus contactos.",
   "skipped.foreignHeading": "Fuera de Norteamérica ({count})",
   "skipped.foreignNote": "Números válidos cuyo código de país no es +1.",
   "skipped.unrecognisedHeading": "Sin reconocer ({count})",
@@ -216,7 +210,6 @@ export const es: Messages = {
 
   // Privacy
   "privacy.title": "Cómo se mantiene privado",
-  "privacy.status.online": "Ahora mismo estás conectado.",
   "privacy.status.offline": "{offline}. ¡Y todo sigue funcionando!",
   "privacy.status.offline.strong": "Estás sin conexión",
   "privacy.contacts.heading": "Qué pasa con tus contactos",

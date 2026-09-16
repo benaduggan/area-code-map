@@ -43,11 +43,9 @@ export function PrivacyDialog({ open, onClose, online }: Props) {
         </div>
         {!online && (
           <p className="privacy-status">
-            {online
-              ? t("privacy.status.online")
-              : tx("privacy.status.offline", {
-                  offline: <strong>{t("privacy.status.offline.strong")}</strong>,
-                })}
+            {tx("privacy.status.offline", {
+              offline: <strong>{t("privacy.status.offline.strong")}</strong>,
+            })}
           </p>
         )}
 

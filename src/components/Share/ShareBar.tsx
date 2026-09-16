@@ -152,7 +152,7 @@ export function ShareBar({ counts, cards, legend, getExportRoot, home }: Props) 
               {t("share.download")}
             </button>
           </div>
-          <p className="skipped-note">{home && !includeHome && t("share.homeLeftOut")}</p>
+          {home && !includeHome && <p className="skipped-note">{t("share.homeLeftOut")}</p>}
           {status && (
             <p className="share-status" role="status">
               {status}

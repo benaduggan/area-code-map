@@ -129,19 +129,9 @@ export function ImportPanel({ onImport, compact = false, bare = false }: Props) 
       {!compact && !bare && <p className="import-lead">{t("import.lead")}</p>}
 
       <div className="import-actions">
-        {canPick && (
-          <button
-            type="button"
-            className={"btn" + (compact ? "" : " btn-primary")}
-            onClick={handlePick}
-            disabled={busy}
-          >
-            {t("import.choose")}
-          </button>
-        )}
         <button
           type="button"
-          className={"btn" + (canPick || compact ? "" : " btn-primary")}
+          className={"btn" + (compact ? "" : " btn-primary")}
           onClick={() => fileRef.current?.click()}
           disabled={busy}
         >
@@ -164,6 +154,11 @@ export function ImportPanel({ onImport, compact = false, bare = false }: Props) 
         >
           {t("import.paste")}
         </button>
+        {canPick && (
+          <button type="button" className="btn" onClick={handlePick} disabled={busy}>
+            {t("import.choose")}
+          </button>
+        )}
       </div>
 
       {pasteOpen && (

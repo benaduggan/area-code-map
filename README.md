@@ -18,7 +18,7 @@ Everything runs locally in your browser, and nothing is uploaded or scraped.
 ## Privacy
 
 - This is a static site. There is no server, no database, and no accounts.
-- Your contacts are parsed in your browser. Raw phone numbers and names are held in memory and when you close the tab by default.
+- Your contacts are parsed in your browser. By default, raw phone numbers and names are held in memory only, and are gone when you close the tab.
 - Tick the box and the app saves your map to this browser's local storage: the count per area code, the names, your own area code, and any numbers it could not map. It never syncs anywhere, and "Forget everything" erases it.
 - A share link can only ever carry a count per area code, plus your own area code if you choose to include it.
 - The source is this repository and the site is deployed from it by GitHub Actions, so what you read here is what runs.

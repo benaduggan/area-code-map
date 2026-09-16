@@ -86,7 +86,7 @@ await page.getByRole("heading", { name: en["results.title"] }).waitFor();
 const fill919 = await page.getAttribute('[data-shape="919"]', "style");
 if (!fill919?.includes("fill")) fail("919 was not painted after import");
 if (!(await page.$('[data-home="mine"]'))) fail("home marker was not drawn");
-await page.waitForSelector(`text=${en["results.fact.farthest"].split("{")[0].trim()}`);
+await page.waitForSelector(`text=${en["results.fact.farthest"].split("{")[0]!.trim()}`);
 
 // Search, select, zoom.
 await page.fill("input[type=search]", "raleigh");

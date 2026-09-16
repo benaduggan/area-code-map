@@ -75,7 +75,6 @@ export const en = {
 
   // Welcome, screen one
   "welcome.tagline": "The story of your contacts",
-  "welcome.lead": "Their area code tells a story",
   "welcome.body":
     "Most people keep their first phone number. The area code you get as a teenager can follow you through every life transition, usually telling the story of where you are from, not where you live now. So if we can project your contacts on a map you can get an interesting picture of where folks may have started out.",
   "welcome.privacy":
@@ -147,7 +146,6 @@ export const en = {
   "results.notMapped.foreign": "{count} outside North America",
   "results.notMapped.unrecognised": "{count} unrecognised",
   "results.notMapped.tollFree": "{count} toll-free",
-  "results.shareCaption": "{numbers} numbers across {codes} area codes",
 
   // Names under an area code
   "names.unnamed.one": "{count} unnamed number",
@@ -190,8 +188,6 @@ export const en = {
   "share.packed":
     "{codes} area codes packed into {chars} characters after the {hash}, which browsers never send to any server.",
   "share.copy": "Copy link",
-  "share.imageNote":
-    "The image shows the whole map with your stats and legend on it, rendered in your browser.",
   "share.homeLeftOut": " Your home marker is left out.",
   "share.copied": "Link copied.",
   "share.copyFailed": "Could not access the clipboard. Select the link above and copy it.",
@@ -200,8 +196,6 @@ export const en = {
 
   // Numbers that could not be placed
   "skipped.title": "What's not on the map",
-  "skipped.intro":
-    "They are listed so you can spot a typo or a number worth fixing in your contacts.",
   "skipped.foreignHeading": "Outside North America ({count})",
   "skipped.foreignNote": "Valid numbers whose country code is not +1.",
   "skipped.unrecognisedHeading": "Unrecognised ({count})",
@@ -216,7 +210,6 @@ export const en = {
 
   // Privacy
   "privacy.title": "How this stays private",
-  "privacy.status.online": "You are online right now.",
   "privacy.status.offline": "{offline} and everything still works!",
   "privacy.status.offline.strong": "You are offline",
   "privacy.contacts.heading": "What happens to your contacts",
