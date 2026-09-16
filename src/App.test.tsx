@@ -2,7 +2,10 @@ import { fireEvent, screen } from "@testing-library/react";
 import { renderWithI18n as render } from "./test/render";
 import { App } from "./App";
 import { en } from "./lib/i18n/en";
+import { makeTranslator } from "./lib/i18n";
 import { encodeCounts, encodeShare } from "./lib/share/codec";
+
+const { t } = makeTranslator("en");
 
 afterEach(() => {
   location.hash = "";
@@ -167,7 +170,9 @@ describe("App", () => {
     skipWelcome();
     chooseExample(/^Maya Grew up/);
     expect(screen.getByRole("heading", { name: "Maya’s map" })).toBeInTheDocument();
-    expect(screen.getByRole("status")).toHaveTextContent("You’re looking at Maya’s map");
+    expect(screen.getByRole("status")).toHaveTextContent(
+      t("examples.banner", { name: en["examples.maya.name"] }),
+    );
     expect(screen.getByText(/Most common:/)).toHaveTextContent("919");
     expect(document.querySelector('[data-home="mine"]')).not.toBeNull();
     // An example is never written to storage, even with remembering on.
@@ -184,7 +189,10 @@ describe("App", () => {
     skipWelcome();
     chooseExample(/^Maya vs Devon$/);
     expect(screen.getByRole("status")).toHaveTextContent(
-      "You’re comparing Maya’s map with Devon’s",
+      t("examples.banner.comparing", {
+        mine: en["examples.maya.name"],
+        theirs: en["examples.devon.name"],
+      }),
     );
     expect(screen.getByText(/You both know people in/)).toHaveTextContent("area codes");
     expect(screen.getByText(/Only you:/)).toBeInTheDocument();
@@ -205,7 +213,9 @@ describe("App", () => {
     expect(stored).toContain("212");
 
     chooseExample(/^Maya Grew up/);
-    expect(screen.getByRole("status")).toHaveTextContent("comparing your map with Maya’s example");
+    expect(screen.getByRole("status")).toHaveTextContent(
+      t("examples.banner.againstMine", { name: en["examples.maya.name"] }),
+    );
     // Still the visitor's own map, and their storage is untouched.
     expect(screen.getByRole("heading", { name: "Your map" })).toBeInTheDocument();
     expect(screen.getByText(/You both know people in/)).toHaveTextContent("919");
