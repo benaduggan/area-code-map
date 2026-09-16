@@ -13,7 +13,11 @@ Everything runs locally in your browser, and nothing is uploaded or scraped.
 - **Import your contacts** pick them from your phone, upload a vCard or CSV export, or paste anything with phone numbers in it.
 - **Your map**: a choropleth of how many numbers you have per area code, with the names behind each region.
 - **Share**: copy a link that encodes only your per-area-code counts (and your own area code, if you tick the box), or download the map as an image. Friends who open your link can add their own contacts and see an interesting comparison.
-- **English and Spanish**, picked from your browser and switchable from the header.
+- **English, Spanish, and French**, picked from your browser and switchable from the header.
+
+## AI Disclosure
+
+This is a project I've had in my mind for 6 years without finding the time to work on it. So seeing it come to life with an LLM over the course of a few days feels really liberating for projects that are sort of "one and done". But I think it is right to disclose that most of this was vibe-coded with an LLM and then read, corrected, and shaped by me. The privacy constraints are the parts I focused on most deliberately to ensure it all stays local.
 
 ## Privacy
 
