@@ -119,6 +119,7 @@ describe("locale switching", () => {
           onRememberChange={noop}
           onImport={noop}
           onSkip={noop}
+          onLoadExample={noop}
           onOpenPrivacy={noop}
         />
       </I18nProvider>,

@@ -5,7 +5,7 @@ export interface Contact {
   phones: string[];
 }
 
-export type ImportSource = "paste" | "vcard" | "csv" | "picker";
+export type ImportSource = "paste" | "vcard" | "csv" | "picker" | "example";
 
 /** A single parsed phone number that belongs to the North American Numbering Plan. */
 export interface NanpNumber {

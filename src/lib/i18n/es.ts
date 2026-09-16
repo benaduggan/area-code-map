@@ -117,6 +117,28 @@ export const es: Messages = {
   "import.help.android.text":
     "App de Contactos → Organizar → Exportar a archivo, y luego súbelo aquí.",
 
+  // Examples
+  "examples.menu": "Ver un ejemplo",
+  "examples.size": "{numbers} números · {codes} códigos de área · su casa es {npa} ({place})",
+  "examples.compareTitle": "O pon dos de ellas lado a lado",
+  "examples.pair": "{a} vs. {b}",
+  "examples.banner": "Estás viendo datos de muestra del mapa de {name}.",
+  "examples.banner.comparing":
+    "Estás comparando dos mapas de muestra: el de {mine} con el de {theirs}.",
+  "examples.compareMine": "O compara tu mapa con el de una de estas personas:",
+  "examples.banner.againstMine": "Estás comparando tu mapa con los datos de muestra de {name}.",
+  "examples.leave": "Salir del ejemplo",
+  "examples.resultsTitle": "El mapa de {name}",
+  "examples.maya.name": "Maya",
+  "examples.maya.blurb":
+    "Creció en Raleigh y ahora vive en Brooklyn. Su familia sigue repartida por las Carolinas.",
+  "examples.devon.name": "Devon",
+  "examples.devon.blurb":
+    "Nació en Chicago y ahora vive en el Área de la Bahía; el viejo barrio y los suburbios siguen en su teléfono.",
+  "examples.jordan.name": "Jordan",
+  "examples.jordan.blurb":
+    "De Toronto, con gente en Montreal, Halifax y Vancouver, y amistades que se fueron al sur.",
+
   // Results
   "results.title": "Tu mapa",
   "results.forget": "Olvidar todo",

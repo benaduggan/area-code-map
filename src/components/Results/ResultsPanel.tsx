@@ -31,6 +31,7 @@ interface Props {
   /** The user's own area code. */
   home: string | null;
   onHomeChange: (npa: string | null) => void;
+  example?: { name: string } | null;
 }
 
 export function ResultsPanel({
@@ -47,6 +48,7 @@ export function ResultsPanel({
   compareColors,
   home,
   onHomeChange,
+  example = null,
 }: Props) {
   const { t, tx, tn, n, locale } = useI18n();
   const stats = useMemo(() => computeStats(result), [result]);
@@ -83,9 +85,11 @@ export function ResultsPanel({
   return (
     <section className="results">
       <div className="panel-head">
-        <h2 className="panel-title">{t("results.title")}</h2>
+        <h2 className="panel-title">
+          {example ? t("examples.resultsTitle", { name: example.name }) : t("results.title")}
+        </h2>
         <button type="button" className="link" onClick={onForget}>
-          {t("results.forget")}
+          {example ? t("examples.leave") : t("results.forget")}
         </button>
       </div>
 
@@ -227,17 +231,21 @@ export function ResultsPanel({
         skipped={result.skipped}
       />
 
-      <label className="remember">
-        <input
-          type="checkbox"
-          checked={remember}
-          onChange={(e) => onRememberChange(e.target.checked)}
-        />
-        <span>{t("results.remember")}</span>
-        <InfoTip text={t("tip.remember")} />
-      </label>
+      {example ? null : (
+        <>
+          <label className="remember">
+            <input
+              type="checkbox"
+              checked={remember}
+              onChange={(e) => onRememberChange(e.target.checked)}
+            />
+            <span>{t("results.remember")}</span>
+            <InfoTip text={t("tip.remember")} />
+          </label>
 
-      {addMore}
+          {addMore}
+        </>
+      )}
 
       <h3 className="panel-title">{t("results.byAreaCode")}</h3>
       <div className="card-list">

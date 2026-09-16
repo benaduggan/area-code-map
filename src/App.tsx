@@ -26,6 +26,8 @@ import {
   setRememberEnabled,
 } from "./lib/contacts/store";
 import { Welcome } from "./components/Welcome/Welcome";
+import { ExamplesMenu } from "./components/Examples/ExamplesMenu";
+import { buildExample, getExample, type ExampleId } from "./lib/examples";
 import { HomeRow } from "./components/Home/HomeRow";
 import { describeHome } from "./lib/home";
 import { PrivacyDialog } from "./components/Privacy/PrivacyDialog";
@@ -84,6 +86,11 @@ export function App() {
   // skipped. Typing a home code on it must not dismiss it, so this keys off
   // what was remembered when the page loaded, not the live home state.
   const [skippedWelcome, setSkippedWelcome] = useState(() => loadHome() !== null);
+  const [example, setExample] = useState<{ mine: ExampleId; theirs: ExampleId | null } | null>(
+    null,
+  );
+  const beforeExample = useRef<{ result: ImportResult | null; home: string | null } | null>(null);
+  const [sharedExample, setSharedExample] = useState<ExampleId | null>(null);
   const { theme, setTheme, dark } = useTheme();
   const online = useOnline();
   const [privacyOpen, setPrivacyOpen] = useState(false);
@@ -107,13 +114,18 @@ export function App() {
   };
 
   useEffect(() => {
-    const onHash = () => setShared(sharedFromLocation());
+    const onHash = () => {
+      setShared(sharedFromLocation());
+      setSharedExample(null);
+    };
     window.addEventListener("hashchange", onHash);
     return () => window.removeEventListener("hashchange", onHash);
   }, []);
 
   const dismissShared = () => {
     setShared(null);
+    setSharedExample(null);
+    setExample((e) => (e ? { ...e, theirs: null } : null));
     if (location.hash) history.replaceState(null, "", location.pathname + location.search);
   };
 
@@ -129,12 +141,12 @@ export function App() {
   );
 
   useEffect(() => {
-    if (result && remember) saveResult(result);
-  }, [result, remember]);
+    if (result && remember && !example) saveResult(result);
+  }, [result, remember, example]);
 
   useEffect(() => {
-    if (remember) saveHome(home);
-  }, [home, remember]);
+    if (remember && !example) saveHome(home);
+  }, [home, remember, example]);
 
   const results = useMemo(() => searchAreaCodes(query), [query]);
   const showingSearch = query.trim().length > 0;
@@ -201,6 +213,43 @@ export function App() {
     mapRef.current?.resetZoom();
   };
 
+  const loadExample = (mine: ExampleId, theirs: ExampleId | null) => {
+    if (!example) beforeExample.current = { result, home };
+    setExample({ mine, theirs });
+    setResult(buildExample(mine));
+    setHome(getExample(mine).home);
+    setShared(
+      theirs ? { counts: buildExample(theirs).counts, home: getExample(theirs).home } : null,
+    );
+    setSharedExample(null);
+    setQuery("");
+    setSelectedCode(null);
+    setSelectedShape(null);
+    setSkippedWelcome(true);
+    mapRef.current?.resetZoom();
+  };
+
+  const compareWithExample = (id: ExampleId) => {
+    setShared({ counts: buildExample(id).counts, home: getExample(id).home });
+    setSharedExample(id);
+    setSelectedCode(null);
+    setSelectedShape(null);
+  };
+
+  const leaveExample = () => {
+    const before = beforeExample.current;
+    beforeExample.current = null;
+    setExample(null);
+    setResult(before?.result ?? null);
+    setHome(before?.home ?? null);
+    setShared(sharedFromLocation());
+    setSharedExample(null);
+    setQuery("");
+    setSelectedCode(null);
+    setSelectedShape(null);
+    mapRef.current?.resetZoom();
+  };
+
   const forget = () => {
     setResult(null);
     setHome(null);
@@ -212,7 +261,9 @@ export function App() {
 
   const handleRemember = (on: boolean) => {
     setRemember(on);
-    setRememberEnabled(on, result, home);
+    // Never let an example be what gets written: store what was there before it.
+    const own = example ? beforeExample.current : { result, home };
+    setRememberEnabled(on, own?.result ?? null, own?.home ?? null);
   };
 
   const homeShapes = useMemo(() => (home ? shapesForCode(home) : []), [home]);
@@ -262,6 +313,42 @@ export function App() {
       </p>
       <button type="button" className="btn" onClick={dismissShared}>
         {comparing ? t("compare.stop") : t("common.dismiss")}
+      </button>
+    </div>
+  );
+
+  const againstExampleBanner = !example && sharedExample && comparing && (
+    <div className="compare-banner" role="status">
+      <p>
+        {tx("examples.banner.againstMine", {
+          name: <strong>{t(getExample(sharedExample).nameKey)}</strong>,
+        })}
+      </p>
+      <button type="button" className="btn" onClick={dismissShared}>
+        {t("compare.stop")}
+      </button>
+    </div>
+  );
+
+  const exampleBanner = example && (
+    <div className="compare-banner" role="status">
+      <p>
+        {example.theirs
+          ? tx("examples.banner.comparing", {
+              mine: <strong>{t(getExample(example.mine).nameKey)}</strong>,
+              theirs: <strong>{t(getExample(example.theirs).nameKey)}</strong>,
+            })
+          : tx("examples.banner", {
+              name: <strong>{t(getExample(example.mine).nameKey)}</strong>,
+            })}
+      </p>
+      {example.theirs && (
+        <button type="button" className="btn" onClick={dismissShared}>
+          {t("compare.stop")}
+        </button>
+      )}
+      <button type="button" className="btn" onClick={leaveExample}>
+        {t("examples.leave")}
       </button>
     </div>
   );
@@ -319,13 +406,16 @@ export function App() {
             setSkippedWelcome(true);
           }}
           onSkip={() => setSkippedWelcome(true)}
+          onLoadExample={loadExample}
           onOpenPrivacy={() => setPrivacyOpen(true)}
         />
       ) : (
         <div className="layout">
           <aside className="sidebar" ref={sidebarRef}>
             <SearchBox value={query} onChange={setQuery} />
-            {!showingSearch && !selectedShape && sharedBanner}
+            {!showingSearch &&
+              !selectedShape &&
+              (exampleBanner || againstExampleBanner || sharedBanner)}
 
             {showingSearch ? (
               <section className="panel" aria-live="polite">
@@ -375,11 +465,20 @@ export function App() {
                   result={result}
                   selectedCode={selectedCode}
                   onSelectCode={selectCode}
-                  onForget={forget}
+                  onForget={example ? leaveExample : forget}
+                  example={example ? { name: t(getExample(example.mine).nameKey) } : null}
                   remember={remember}
                   onRememberChange={handleRemember}
                   getExportRoot={() => mapRef.current?.getExportRoot() ?? null}
-                  addMore={<ImportPanel onImport={handleImport} compact />}
+                  addMore={
+                    <ImportPanel
+                      onImport={handleImport}
+                      compact
+                      extraAction={
+                        shared ? undefined : <ExamplesMenu onCompare={compareWithExample} />
+                      }
+                    />
+                  }
                   scaleLegend={
                     scale ? scale.labels.map((label, i) => ({ color: ramp[i]!, label })) : []
                   }
@@ -410,7 +509,10 @@ export function App() {
             ) : (
               <div className="panel">
                 <HomeRow home={home} onChange={setHome} />
-                <ImportPanel onImport={handleImport} />
+                <ImportPanel
+                  onImport={handleImport}
+                  extraAction={<ExamplesMenu onLoad={loadExample} />}
+                />
                 <p className="hint">{t("search.hint")}</p>
               </div>
             )}

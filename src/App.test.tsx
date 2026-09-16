@@ -2,7 +2,10 @@ import { fireEvent, screen } from "@testing-library/react";
 import { renderWithI18n as render } from "./test/render";
 import { App } from "./App";
 import { en } from "./lib/i18n/en";
+import { makeTranslator } from "./lib/i18n";
 import { encodeCounts, encodeShare } from "./lib/share/codec";
+
+const { t } = makeTranslator("en");
 
 afterEach(() => {
   location.hash = "";
@@ -15,6 +18,11 @@ function skipWelcome() {
 
 function getStarted() {
   fireEvent.click(screen.getByRole("button", { name: /get started/i }));
+}
+
+function chooseExample(name: RegExp) {
+  fireEvent.click(screen.getByRole("button", { name: en["examples.menu"] }));
+  fireEvent.click(screen.getByRole("button", { name }));
 }
 
 function pasteNumbers(text: string) {
@@ -155,6 +163,67 @@ describe("App", () => {
     );
     expect(document.querySelector('[data-home="theirs"]')).not.toBeNull();
     expect(screen.getByText("Their home")).toBeInTheDocument();
+  });
+
+  it("borrows the map for an example and hands it back", () => {
+    render(<App />);
+    skipWelcome();
+    chooseExample(/^Maya Grew up/);
+    expect(screen.getByRole("heading", { name: "Maya’s map" })).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent(
+      t("examples.banner", { name: en["examples.maya.name"] }),
+    );
+    expect(screen.getByText(/Most common:/)).toHaveTextContent("919");
+    expect(document.querySelector('[data-home="mine"]')).not.toBeNull();
+    // An example is never written to storage, even with remembering on.
+    expect(localStorage.getItem("area-code-map:import:v2")).toBeNull();
+
+    fireEvent.click(screen.getAllByRole("button", { name: en["examples.leave"] })[0]!);
+    expect(screen.queryByRole("heading", { name: "Maya’s map" })).toBeNull();
+    expect(screen.getByRole("heading", { name: "Light up your map" })).toBeInTheDocument();
+    expect(screen.queryByText(/^Home:/)).toBeNull();
+  });
+
+  it("compares two examples against each other", () => {
+    render(<App />);
+    skipWelcome();
+    chooseExample(/^Maya vs Devon$/);
+    expect(screen.getByRole("status")).toHaveTextContent(
+      t("examples.banner.comparing", {
+        mine: en["examples.maya.name"],
+        theirs: en["examples.devon.name"],
+      }),
+    );
+    expect(screen.getByText(/You both know people in/)).toHaveTextContent("area codes");
+    expect(screen.getByText(/Only you:/)).toBeInTheDocument();
+    expect(document.querySelector('[data-home="theirs"]')).not.toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "Stop comparing" }));
+    expect(screen.queryByText(/Only you:/)).toBeNull();
+    // Still inside Maya's example, just not comparing any more.
+    expect(screen.getByRole("heading", { name: "Maya’s map" })).toBeInTheDocument();
+  });
+
+  it("compares an imported map against an example without touching it", () => {
+    render(<App />);
+    skipWelcome();
+    pasteNumbers("919-555-0100, 212-555-0100");
+    fireEvent.click(screen.getByLabelText(/remember this map on this device/i));
+    const stored = localStorage.getItem("area-code-map:import:v2");
+    expect(stored).toContain("212");
+
+    chooseExample(/^Maya Grew up/);
+    expect(screen.getByRole("status")).toHaveTextContent(
+      t("examples.banner.againstMine", { name: en["examples.maya.name"] }),
+    );
+    // Still the visitor's own map, and their storage is untouched.
+    expect(screen.getByRole("heading", { name: "Your map" })).toBeInTheDocument();
+    expect(screen.getByText(/You both know people in/)).toHaveTextContent("919");
+    expect(localStorage.getItem("area-code-map:import:v2")).toBe(stored);
+
+    fireEvent.click(screen.getByRole("button", { name: "Stop comparing" }));
+    expect(screen.queryByRole("status")).toBeNull();
+    expect(screen.getByRole("button", { name: en["examples.menu"] })).toBeInTheDocument();
   });
 
   it("shows the codes on a clicked region", () => {
