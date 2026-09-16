@@ -121,6 +121,28 @@ export const fr: Messages = {
   "import.help.android.text":
     "Application Contacts → Organiser → Exporter vers un fichier, puis téléversez-le ici.",
 
+  // Examples
+  "examples.menu": "Voir un exemple",
+  "examples.size": "{numbers} numéros · {codes} indicatifs régionaux · vient du {npa} ({place})",
+  "examples.compareTitle": "Ou mettez-en deux côte à côte",
+  "examples.pair": "{a} vs {b}",
+  "examples.banner": "Vous consultez les données d’exemple de la carte de {name}.",
+  "examples.banner.comparing":
+    "Vous comparez deux cartes d’exemple : celle de {mine} et celle de {theirs}.",
+  "examples.compareMine": "Ou comparez votre carte avec l’une des leurs :",
+  "examples.banner.againstMine": "Vous comparez votre carte aux données d’exemple de {name}.",
+  "examples.leave": "Quitter l’exemple",
+  "examples.resultsTitle": "La carte de {name}",
+  "examples.maya.name": "Maya",
+  "examples.maya.blurb":
+    "A grandi à Raleigh, vit maintenant à Brooklyn. La famille est encore éparpillée dans les Carolines.",
+  "examples.devon.name": "Devon",
+  "examples.devon.blurb":
+    "A grandi à Chicago, vit maintenant dans la région de la baie de San Francisco ; le vieux quartier et les banlieues sont encore dans le téléphone.",
+  "examples.jordan.name": "Jordan",
+  "examples.jordan.blurb":
+    "De Toronto, avec du monde à Montréal, à Halifax et à Vancouver, et des amis partis vers le sud.",
+
   // Results
   "results.title": "Votre carte",
   "results.forget": "Tout oublier",

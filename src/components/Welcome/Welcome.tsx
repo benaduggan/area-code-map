@@ -3,6 +3,8 @@ import type { ImportResult } from "../../lib/contacts";
 import { useI18n } from "../../lib/i18n";
 import { HomeCodeField } from "../Home/HomeCodeField";
 import { ImportPanel } from "../Import/ImportPanel";
+import { ExamplesMenu } from "../Examples/ExamplesMenu";
+import type { ExampleId } from "../../lib/examples";
 import { InfoTip } from "../InfoTip";
 import { HomeIcon } from "../Icons";
 import "./Welcome.css";
@@ -14,6 +16,7 @@ interface Props {
   onRememberChange: (on: boolean) => void;
   onImport: (result: ImportResult) => void;
   onSkip: () => void;
+  onLoadExample: (mine: ExampleId, theirs: ExampleId | null) => void;
   onOpenPrivacy: () => void;
 }
 
@@ -75,6 +78,7 @@ function Setup({
   onRememberChange,
   onImport,
   onSkip,
+  onLoadExample,
   onBack,
 }: Props & { onBack: () => void }) {
   const { t } = useI18n();
@@ -106,7 +110,11 @@ function Setup({
 
       <section className="welcome-step" aria-labelledby="welcome-import-title">
         <h2 id="welcome-import-title">{t("welcome.step2")}</h2>
-        <ImportPanel onImport={onImport} bare />
+        <ImportPanel
+          onImport={onImport}
+          bare
+          extraAction={<ExamplesMenu onLoad={onLoadExample} />}
+        />
       </section>
 
       <div className="welcome-actions welcome-actions-end">

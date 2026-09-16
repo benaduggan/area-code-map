@@ -121,6 +121,27 @@ export const en = {
   "import.help.android.label": "Android:",
   "import.help.android.text": "Contacts app → Organize → Export to file, then upload it here.",
 
+  // Examples
+  "examples.menu": "See an example",
+  "examples.size": "{numbers} numbers · {codes} area codes · home is {npa} ({place})",
+  "examples.compareTitle": "Or put two of them side by side",
+  "examples.pair": "{a} vs {b}",
+  "examples.banner": "You’re looking at sample data for {name}’s map.",
+  "examples.banner.comparing": "You’re comparing two sample maps. {mine}’s map with {theirs}’s.",
+  "examples.compareMine": "Or hold your map up against one of theirs:",
+  "examples.banner.againstMine": "You’re comparing your map with {name}’s sample data.",
+  "examples.leave": "Leave the example",
+  "examples.resultsTitle": "{name}’s map",
+  "examples.maya.name": "Maya",
+  "examples.maya.blurb":
+    "Grew up in Raleigh, now in Brooklyn. Family still spread across the Carolinas.",
+  "examples.devon.name": "Devon",
+  "examples.devon.blurb":
+    "From Chicago, now in the Bay Area — the old neighborhood and the suburbs are still in the phone.",
+  "examples.jordan.name": "Jordan",
+  "examples.jordan.blurb":
+    "Toronto, with people in Montréal, Halifax, and Vancouver, and some friends who moved south.",
+
   // Results
   "results.title": "Your map",
   "results.forget": "Forget everything",

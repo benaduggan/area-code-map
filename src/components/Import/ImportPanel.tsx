@@ -19,6 +19,8 @@ interface Props {
   compact?: boolean;
   /** Buttons only: the welcome screen supplies its own heading and lead. */
   bare?: boolean;
+  /** One more control in the button row, e.g. the examples menu. */
+  extraAction?: React.ReactNode;
 }
 
 /** The export instructions, so the copy stays in the dictionary. */
@@ -57,7 +59,7 @@ const HELP: {
   },
 ];
 
-export function ImportPanel({ onImport, compact = false, bare = false }: Props) {
+export function ImportPanel({ onImport, compact = false, bare = false, extraAction }: Props) {
   const { t } = useI18n();
   const [pasteOpen, setPasteOpen] = useState(false);
   const [pasted, setPasted] = useState("");
@@ -159,6 +161,7 @@ export function ImportPanel({ onImport, compact = false, bare = false }: Props) 
             {t("import.choose")}
           </button>
         )}
+        {extraAction}
       </div>
 
       {pasteOpen && (

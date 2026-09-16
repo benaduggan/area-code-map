@@ -1,0 +1,83 @@
+.example-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex: 0 0 auto;
+}
+
+.example-menu {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 10;
+  width: min(23rem, calc(100vw - 1rem));
+  overflow-y: auto;
+  margin: 0;
+  padding: 0.75rem;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  border-radius: 0.6rem;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 20%);
+}
+
+.example-menu-lead {
+  margin: 0 0 0.6rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.example-menu-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.example-choice {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  width: 100%;
+  padding: 0.5rem 0.6rem;
+  font: inherit;
+  text-align: left;
+  color: var(--fg);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+.example-choice:hover {
+  border-color: var(--muted);
+}
+
+.example-name {
+  font-weight: 600;
+}
+
+.example-blurb {
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.example-size {
+  font-size: 0.75rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.example-menu-label {
+  margin: 0.75rem 0 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.example-pairs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
