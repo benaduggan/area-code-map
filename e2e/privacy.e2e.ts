@@ -10,6 +10,9 @@
  */
 import { spawn } from "node:child_process";
 import { chromium } from "playwright-core";
+// The English dictionary drives the selectors: this check must keep passing
+// when the copy is reworded, because it is the proof of the privacy promise.
+import { en } from "../src/lib/i18n/en";
 
 const PORT = 4179;
 const BASE = `http://localhost:${PORT}/area-code-map/`;
@@ -67,17 +70,23 @@ page.on("pageerror", (e) => pageErrors.push(String(e)));
 
 await page.goto(BASE, { waitUntil: "networkidle" });
 
-// Import via paste.
-await page.click("text=Paste numbers");
+// The welcome screen: set a home area code, then import via paste.
+await page.waitForSelector(".welcome-tagline");
+await page.getByRole("button", { name: en["welcome.getStarted"] }).click();
+await page.fill("input[inputmode=numeric]", "919");
+await page.waitForSelector("text=Raleigh, North Carolina");
+await page.getByRole("button", { name: en["import.paste"] }).click();
 await page.fill(
   "textarea",
   "(919) 555-0100, 919-555-0101, 212-555-0100, 415-555-0100, +44 20 7946 0958",
 );
-await page.click("text=Map these");
-await page.waitForSelector("text=Your map");
+await page.getByRole("button", { name: en["import.mapThese"] }).click();
+await page.getByRole("heading", { name: en["results.title"] }).waitFor();
 
 const fill919 = await page.getAttribute('[data-shape="919"]', "style");
 if (!fill919?.includes("fill")) fail("919 was not painted after import");
+if (!(await page.$('[data-home="mine"]'))) fail("home marker was not drawn");
+await page.waitForSelector(`text=${en["results.fact.farthest"].split("{")[0]!.trim()}`);
 
 // Search, select, zoom.
 await page.fill("input[type=search]", "raleigh");
@@ -86,9 +95,9 @@ await page.waitForTimeout(700);
 await page.fill("input[type=search]", "");
 
 // Share link carries counts in the hash and nothing in the path or query.
-await page.click("button:has-text('Share')");
-await page.click("text=Copy link");
-await page.waitForSelector("text=Link copied");
+await page.locator(`.share > button:has-text("${en["share.button"]}")`).click();
+await page.getByRole("button", { name: en["share.copy"] }).click();
+await page.waitForSelector(`text=${en["share.copied"]}`);
 const shareUrl = await page.evaluate(() => navigator.clipboard.readText());
 const parsed = new URL(shareUrl);
 if (
@@ -98,7 +107,7 @@ if (
 ) {
   fail(`unexpected share URL ${shareUrl}`);
 }
-if (!parsed.hash.startsWith("#v1.")) fail(`share URL has no v1 hash payload: ${shareUrl}`);
+if (!parsed.hash.startsWith("#v2.")) fail(`share URL has no v2 hash payload: ${shareUrl}`);
 
 // Opening the link in a fresh page shows the shared map.
 const viewer = await context.newPage();
@@ -114,15 +123,17 @@ viewer.on("request", (req) => {
 });
 await viewer.goto(shareUrl, { waitUntil: "networkidle" });
 await viewer.waitForSelector("text=shared map");
+await viewer.waitForSelector("text=They’re from 919");
+if (!(await viewer.$('[data-home="theirs"]'))) fail("shared home marker was not drawn");
 await viewer.close();
 
 // PNG export triggers a download; use the button outside the dialog.
 await page.keyboard.press("Escape");
 const [download] = await Promise.all([
   page.waitForEvent("download", { timeout: 15000 }),
-  page.click(".share > button:has-text('Download image')"),
+  page.click(`.share > button:has-text("${en["share.download"]}")`),
 ]);
-if (download.suggestedFilename() !== "area-code-map.png")
+if (download.suggestedFilename() !== "hometowns.png")
   fail(`unexpected download name ${download.suggestedFilename()}`);
 const path = await download.path();
 if (!path) fail("download had no file");

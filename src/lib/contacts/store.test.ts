@@ -2,7 +2,9 @@ import { aggregateContacts } from "./aggregate";
 import {
   clearStored,
   isRememberEnabled,
+  loadHome,
   loadResult,
+  saveHome,
   saveResult,
   setRememberEnabled,
 } from "./store";
@@ -36,6 +38,7 @@ describe("store", () => {
     expect(back.skipped).toEqual({
       foreign: [{ e164: "+442079460958", country: "GB" }],
       unrecognised: [],
+      nonGeographic: [],
     });
   });
 
@@ -56,5 +59,24 @@ describe("store", () => {
     setRememberEnabled(true, null);
     clearStored();
     expect(loadResult()).toBeNull();
+  });
+
+  it("remembers the home area code only while remembering is on", () => {
+    saveHome("919");
+    expect(loadHome()).toBeNull();
+    setRememberEnabled(true, null, "919");
+    expect(loadHome()).toBe("919");
+    saveHome("bad");
+    expect(loadHome()).toBeNull();
+    saveHome("312");
+    setRememberEnabled(false, null);
+    expect(loadHome()).toBeNull();
+    expect(localStorage.length).toBe(0);
+  });
+
+  it("forgetting clears the home area code too", () => {
+    setRememberEnabled(true, null, "919");
+    clearStored();
+    expect(loadHome()).toBeNull();
   });
 });

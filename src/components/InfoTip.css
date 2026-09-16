@@ -1,0 +1,68 @@
+.info-tip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.1rem;
+  height: 1.1rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  font-style: italic;
+  font-family: Georgia, serif;
+  color: var(--muted);
+  border: 1px solid var(--muted);
+  border-radius: 50%;
+  cursor: help;
+}
+
+/*
+ * A popover, so it paints in the top layer and escapes the scroll containers
+ * that would otherwise clip it. Position comes from InfoTip.tsx; everything
+ * here is appearance, plus the `position: fixed` that the placement assumes.
+ */
+.info-tip-bubble {
+  position: fixed;
+  /* Overridden by the placement code; these only matter for the first frame. */
+  left: 0;
+  top: 0;
+  width: 16rem;
+  max-width: calc(100vw - 1rem);
+  height: max-content;
+  margin: 0;
+  padding: 0.5rem 0.65rem;
+  font: inherit;
+  font-size: 0.8rem;
+  font-style: normal;
+  font-weight: 400;
+  font-family: system-ui, sans-serif;
+  line-height: 1.4;
+  text-align: left;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 0.4rem;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.18);
+  pointer-events: none;
+  overflow: visible;
+}
+
+/* Closed by default in browsers with popover; never shown in those without,
+   where the anchor's aria-label still carries the text. */
+.info-tip-bubble:not(:popover-open) {
+  display: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .info-tip-bubble:popover-open {
+    animation: info-tip-in 120ms ease;
+  }
+}
+
+@keyframes info-tip-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

@@ -16,10 +16,13 @@ import {
   SHAPES,
   VIEW_HEIGHT,
   VIEW_WIDTH,
+  getShape,
   unionBounds,
   type Inset,
   type ShapeGeometry,
 } from "../../lib/geo/model";
+import { useI18n, type MessageKey } from "../../lib/i18n";
+import { HOUSE_PATH } from "../Icons";
 import "./AreaCodeMap.css";
 
 export interface AreaCodeMapProps {
@@ -29,6 +32,10 @@ export interface AreaCodeMapProps {
   hatchFor?: (shapeId: string) => boolean;
   selectedShapeIds?: ReadonlySet<string>;
   highlightedShapeIds?: ReadonlySet<string>;
+  /** The user's own area code: outlined, with a house marker on the first shape. */
+  homeShapeIds?: readonly string[];
+  /** A shared map's home, drawn as a hollow marker so both can show at once. */
+  theirHomeShapeIds?: readonly string[];
   onSelectShape?: (shapeId: string | null) => void;
   onHoverShape?: (shapeId: string | null) => void;
   /** Rendered inside the tooltip for the hovered shape. */
@@ -42,6 +49,14 @@ export interface AreaCodeMapHandle {
   getExportRoot: () => HTMLElement | null;
 }
 
+/** Inset frames come from the geo model; their captions come from the dictionary. */
+const INSET_LABELS: Record<string, MessageKey> = {
+  alaska: "map.inset.alaska",
+  pacific: "map.inset.pacific",
+  hawaii: "map.inset.hawaii",
+  caribbean: "map.inset.caribbean",
+};
+
 const MIN_ZOOM = 1;
 const MAX_ZOOM = 12;
 
@@ -51,12 +66,15 @@ export const AreaCodeMap = forwardRef<AreaCodeMapHandle, AreaCodeMapProps>(funct
     hatchFor,
     selectedShapeIds,
     highlightedShapeIds,
+    homeShapeIds,
+    theirHomeShapeIds,
     onSelectShape,
     onHoverShape,
     renderTooltip,
   },
   ref,
 ) {
+  const { t } = useI18n();
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const zoomRef = useRef<ZoomBehavior<SVGSVGElement, unknown> | null>(null);
@@ -159,11 +177,14 @@ export const AreaCodeMap = forwardRef<AreaCodeMapHandle, AreaCodeMapProps>(funct
     return m;
   }, []);
 
+  const homeSet = useMemo(() => new Set(homeShapeIds), [homeShapeIds]);
+
   const classFor = (id: string) =>
     [
       "shape",
       selectedShapeIds?.has(id) ? "is-selected" : "",
       highlightedShapeIds?.has(id) ? "is-highlighted" : "",
+      homeSet.has(id) ? "is-home" : "",
       hovered === id ? "is-hovered" : "",
     ]
       .filter(Boolean)
@@ -206,6 +227,32 @@ export const AreaCodeMap = forwardRef<AreaCodeMapHandle, AreaCodeMapProps>(funct
       );
     });
 
+  /**
+   * A house at the centroid of the first shape of a home code, drawn after
+   * the shapes so it sits on top. Scaled by 1/k so it stays the same size on
+   * screen at any zoom. Pointer events pass through to the shape beneath.
+   */
+  const renderHome = (insetId: string, ids: readonly string[] | undefined, mine: boolean) => {
+    const shape = ids?.[0] ? getShape(ids[0]) : undefined;
+    if (!shape || shape.inset !== insetId) return null;
+    const k = insetId === "main" ? transform.k : 1;
+    const [cx, cy] = shape.centroid;
+    return (
+      <g
+        className={"home-marker" + (mine ? "" : " is-theirs")}
+        transform={`translate(${cx} ${cy}) scale(${1 / k})`}
+        data-home={mine ? "mine" : "theirs"}
+      >
+        <circle className="home-marker-disc" r={9} />
+        <path
+          className="home-marker-house"
+          d={HOUSE_PATH}
+          transform="translate(-6 -6) scale(0.5)"
+        />
+      </g>
+    );
+  };
+
   const zoomed = transform.k !== 1 || transform.x !== 0 || transform.y !== 0;
 
   const zoomBy = (factor: number) => {
@@ -216,33 +263,38 @@ export const AreaCodeMap = forwardRef<AreaCodeMapHandle, AreaCodeMapProps>(funct
 
   // Each inset is its own SVG cropped to its frame, so CSS can pin them to the
   // bottom of the map area whatever the container's shape.
-  const renderInset = (inset: Inset) => (
-    <svg
-      key={inset.id}
-      className={`inset inset-${inset.id}`}
-      viewBox={`${inset.frame.x} ${inset.frame.y} ${inset.frame.width} ${inset.frame.height}`}
-      role="img"
-      aria-label={inset.label}
-      data-inset={inset.id}
-    >
-      <rect
-        className="inset-frame"
-        x={inset.frame.x}
-        y={inset.frame.y}
-        width={inset.frame.width}
-        height={inset.frame.height}
-        rx={4}
-      />
-      <text
-        className="inset-label"
-        x={inset.frame.x + 6}
-        y={inset.frame.y + inset.frame.height - 5}
+  const renderInset = (inset: Inset) => {
+    const label = INSET_LABELS[inset.id] ? t(INSET_LABELS[inset.id]!) : inset.label;
+    return (
+      <svg
+        key={inset.id}
+        className={`inset inset-${inset.id}`}
+        viewBox={`${inset.frame.x} ${inset.frame.y} ${inset.frame.width} ${inset.frame.height}`}
+        role="img"
+        aria-label={label}
+        data-inset={inset.id}
       >
-        {inset.label}
-      </text>
-      {renderShapes(inset.id)}
-    </svg>
-  );
+        <rect
+          className="inset-frame"
+          x={inset.frame.x}
+          y={inset.frame.y}
+          width={inset.frame.width}
+          height={inset.frame.height}
+          rx={4}
+        />
+        <text
+          className="inset-label"
+          x={inset.frame.x + 6}
+          y={inset.frame.y + inset.frame.height - 5}
+        >
+          {label}
+        </text>
+        {renderShapes(inset.id)}
+        {renderHome(inset.id, theirHomeShapeIds, false)}
+        {renderHome(inset.id, homeShapeIds, true)}
+      </svg>
+    );
+  };
   const inset = (id: string) => INSETS.find((i) => i.id === id)!;
 
   return (
@@ -252,7 +304,7 @@ export const AreaCodeMap = forwardRef<AreaCodeMapHandle, AreaCodeMapProps>(funct
         className="map-svg"
         viewBox={`0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`}
         role="img"
-        aria-label="Map of North American area codes"
+        aria-label={t("map.aria")}
         onClick={(e) => {
           if (e.target === e.currentTarget) onSelectShape?.(null);
         }}
@@ -270,6 +322,8 @@ export const AreaCodeMap = forwardRef<AreaCodeMapHandle, AreaCodeMapProps>(funct
         </defs>
         <g className="main" transform={transform.toString()}>
           {renderShapes("main", transform.k)}
+          {renderHome("main", theirHomeShapeIds, false)}
+          {renderHome("main", homeShapeIds, true)}
         </g>
       </svg>
 
@@ -288,8 +342,8 @@ export const AreaCodeMap = forwardRef<AreaCodeMapHandle, AreaCodeMapProps>(funct
         <button
           type="button"
           className="map-control"
-          aria-label="Zoom in"
-          title="Zoom in"
+          aria-label={t("map.zoomIn")}
+          title={t("map.zoomIn")}
           disabled={transform.k >= MAX_ZOOM}
           onClick={() => zoomBy(1.6)}
         >
@@ -298,8 +352,8 @@ export const AreaCodeMap = forwardRef<AreaCodeMapHandle, AreaCodeMapProps>(funct
         <button
           type="button"
           className="map-control"
-          aria-label="Zoom out"
-          title="Zoom out"
+          aria-label={t("map.zoomOut")}
+          title={t("map.zoomOut")}
           disabled={transform.k <= MIN_ZOOM}
           onClick={() => zoomBy(1 / 1.6)}
         >
@@ -309,8 +363,8 @@ export const AreaCodeMap = forwardRef<AreaCodeMapHandle, AreaCodeMapProps>(funct
           <button
             type="button"
             className="map-control map-reset"
-            aria-label="Reset view"
-            title="Reset view"
+            aria-label={t("map.resetView")}
+            title={t("map.resetView")}
             onClick={resetZoom}
           >
             ⟲

@@ -1,4 +1,5 @@
 import { useId } from "react";
+import { useI18n } from "../../lib/i18n";
 import "./SearchBox.css";
 
 interface Props {
@@ -8,10 +9,11 @@ interface Props {
 
 export function SearchBox({ value, onChange }: Props) {
   const id = useId();
+  const { t } = useI18n();
   return (
     <div className="search">
       <label className="visually-hidden" htmlFor={id}>
-        Search area codes
+        {t("search.label")}
       </label>
       <input
         id={id}
@@ -19,7 +21,7 @@ export function SearchBox({ value, onChange }: Props) {
         type="search"
         inputMode="search"
         autoComplete="off"
-        placeholder="Area code, city, or state…"
+        placeholder={t("search.placeholder")}
         value={value}
         onChange={(e) => onChange(e.target.value)}
       />

@@ -10,15 +10,55 @@ import {
   type ImportResult,
   type ImportSource,
 } from "../../lib/contacts";
+import { useI18n, type MessageKey } from "../../lib/i18n";
 import "./ImportPanel.css";
 
 interface Props {
   onImport: (result: ImportResult) => void;
   /** Shorter version shown under existing results. */
   compact?: boolean;
+  /** Buttons only: the welcome screen supplies its own heading and lead. */
+  bare?: boolean;
 }
 
-export function ImportPanel({ onImport, compact = false }: Props) {
+/** The export instructions, so the copy stays in the dictionary. */
+const HELP: {
+  id: string;
+  href?: string;
+  label: MessageKey;
+  text: MessageKey;
+  link?: MessageKey;
+}[] = [
+  {
+    id: "iphone",
+    href: "https://www.icloud.com/contacts",
+    label: "import.help.iphone.label",
+    text: "import.help.iphone.text",
+    link: "import.help.iphone.link",
+  },
+  {
+    id: "google",
+    href: "https://contacts.google.com/",
+    label: "import.help.google.label",
+    text: "import.help.google.text",
+    link: "import.help.google.link",
+  },
+  {
+    id: "outlook",
+    href: "https://outlook.live.com/people/",
+    label: "import.help.outlook.label",
+    text: "import.help.outlook.text",
+    link: "import.help.outlook.link",
+  },
+  {
+    id: "android",
+    label: "import.help.android.label",
+    text: "import.help.android.text",
+  },
+];
+
+export function ImportPanel({ onImport, compact = false, bare = false }: Props) {
+  const { t } = useI18n();
   const [pasteOpen, setPasteOpen] = useState(false);
   const [pasted, setPasted] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -29,7 +69,7 @@ export function ImportPanel({ onImport, compact = false }: Props) {
   const finish = (contacts: Contact[], source: ImportSource) => {
     const result = aggregateContacts(contacts, source);
     if (result.summary.numbers === 0) {
-      setError("No phone numbers found in that. Try a different file or paste some numbers.");
+      setError(t("import.error.noNumbers"));
       return;
     }
     setError(null);
@@ -61,7 +101,7 @@ export function ImportPanel({ onImport, compact = false }: Props) {
       }
       finish(all, source);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not read that file.");
+      setError(e instanceof Error ? e.message : t("import.error.file"));
     } finally {
       setBusy(false);
       if (fileRef.current) fileRef.current.value = "";
@@ -75,40 +115,27 @@ export function ImportPanel({ onImport, compact = false }: Props) {
       const contacts = await pickContacts();
       if (contacts.length) finish(contacts, "picker");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not open your contacts.");
+      setError(e instanceof Error ? e.message : t("import.error.contacts"));
     } finally {
       setBusy(false);
     }
   };
 
   return (
-    <section className="import">
-      <h2 className="panel-title">{compact ? "Add more contacts" : "Light up your map"}</h2>
-      {!compact && (
-        <p className="import-lead">
-          Add the phone numbers in your contacts. They are read right here in your browser and never
-          uploaded.
-        </p>
+    <section className={"import" + (bare ? " is-bare" : "")}>
+      {!bare && (
+        <h2 className="panel-title">{compact ? t("import.titleMore") : t("import.title")}</h2>
       )}
+      {!compact && !bare && <p className="import-lead">{t("import.lead")}</p>}
 
       <div className="import-actions">
-        {canPick && (
-          <button
-            type="button"
-            className={"btn" + (compact ? "" : " btn-primary")}
-            onClick={handlePick}
-            disabled={busy}
-          >
-            Choose from contacts
-          </button>
-        )}
         <button
           type="button"
-          className={"btn" + (canPick || compact ? "" : " btn-primary")}
+          className={"btn" + (compact ? "" : " btn-primary")}
           onClick={() => fileRef.current?.click()}
           disabled={busy}
         >
-          Upload a file
+          {t("import.upload")}
         </button>
         <input
           ref={fileRef}
@@ -117,7 +144,7 @@ export function ImportPanel({ onImport, compact = false }: Props) {
           multiple
           hidden
           onChange={(e) => void handleFiles(e.target.files)}
-          aria-label="Upload a vCard or CSV export"
+          aria-label={t("import.uploadAria")}
         />
         <button
           type="button"
@@ -125,8 +152,13 @@ export function ImportPanel({ onImport, compact = false }: Props) {
           onClick={() => setPasteOpen((v) => !v)}
           disabled={busy}
         >
-          Paste numbers
+          {t("import.paste")}
         </button>
+        {canPick && (
+          <button type="button" className="btn" onClick={handlePick} disabled={busy}>
+            {t("import.choose")}
+          </button>
+        )}
       </div>
 
       {pasteOpen && (
@@ -140,19 +172,17 @@ export function ImportPanel({ onImport, compact = false }: Props) {
           <textarea
             className="paste-input"
             rows={5}
-            placeholder={
-              "Paste anything with phone numbers in it, e.g.\n(919) 555-0100\n+1 212 555 0199"
-            }
+            placeholder={t("import.pastePlaceholder")}
             value={pasted}
             onChange={(e) => setPasted(e.target.value)}
-            aria-label="Paste phone numbers"
+            aria-label={t("import.pasteAria")}
           />
           <button
             type="submit"
             className={"btn" + (compact ? "" : " btn-primary")}
             disabled={!pasted.trim()}
           >
-            Map these
+            {t("import.mapThese")}
           </button>
         </form>
       )}
@@ -165,53 +195,25 @@ export function ImportPanel({ onImport, compact = false }: Props) {
 
       {!compact && (
         <details className="import-help">
-          <summary>How do I export my contacts?</summary>
+          <summary>{t("import.help.summary")}</summary>
           <ul className="export-list">
-            <li>
-              <span>
-                <strong>iPhone / iCloud:</strong> Contacts → select all → Export vCard.
-              </span>
-              <a
-                className="btn btn-small"
-                href="https://www.icloud.com/contacts"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Open iCloud Contacts ↗
-              </a>
-            </li>
-            <li>
-              <span>
-                <strong>Google:</strong> Export → Google CSV or vCard.
-              </span>
-              <a
-                className="btn btn-small"
-                href="https://contacts.google.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Open Google Contacts ↗
-              </a>
-            </li>
-            <li>
-              <span>
-                <strong>Outlook:</strong> People → Manage → Export contacts.
-              </span>
-              <a
-                className="btn btn-small"
-                href="https://outlook.live.com/people/"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Open Outlook People ↗
-              </a>
-            </li>
-            <li>
-              <span>
-                <strong>Android:</strong> Contacts app → Fix &amp; manage → Export to file (.vcf),
-                then upload it here.
-              </span>
-            </li>
+            {HELP.map((h) => (
+              <li key={h.id}>
+                <span>
+                  <strong>{t(h.label)}</strong> {t(h.text)}
+                </span>
+                {h.href && h.link && (
+                  <a
+                    className="btn btn-small"
+                    href={h.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {t(h.link)}
+                  </a>
+                )}
+              </li>
+            ))}
           </ul>
         </details>
       )}

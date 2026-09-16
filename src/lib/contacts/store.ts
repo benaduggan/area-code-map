@@ -10,6 +10,7 @@ import type { ForeignNumber, ImportResult, NamedCount } from "./types";
 const KEY = "area-code-map:import:v2";
 const LEGACY_KEY = "area-code-map:counts:v1";
 const OPT_IN_KEY = "area-code-map:remember";
+const HOME_KEY = "area-code-map:home";
 
 interface Stored {
   summary: ImportResult["summary"];
@@ -28,17 +29,43 @@ export function isRememberEnabled(): boolean {
   }
 }
 
-export function setRememberEnabled(on: boolean, result: ImportResult | null): void {
+export function setRememberEnabled(
+  on: boolean,
+  result: ImportResult | null,
+  home: string | null = null,
+): void {
   try {
     if (on) {
       localStorage.setItem(OPT_IN_KEY, "1");
       if (result) saveResult(result);
+      saveHome(home);
     } else {
       localStorage.removeItem(OPT_IN_KEY);
       clearStored();
     }
   } catch {
     /* storage unavailable */
+  }
+}
+
+/** The user's own area code. Only written while remembering is on. */
+export function saveHome(home: string | null): void {
+  try {
+    if (!isRememberEnabled()) return;
+    if (home && /^\d{3}$/.test(home)) localStorage.setItem(HOME_KEY, home);
+    else localStorage.removeItem(HOME_KEY);
+  } catch {
+    /* storage unavailable */
+  }
+}
+
+export function loadHome(): string | null {
+  try {
+    if (!isRememberEnabled()) return null;
+    const v = localStorage.getItem(HOME_KEY);
+    return v && /^\d{3}$/.test(v) ? v : null;
+  } catch {
+    return null;
   }
 }
 
@@ -116,6 +143,7 @@ function summaryFor(counts: Map<string, number>, partial?: Partial<ImportResult[
     nanp,
     foreign: 0,
     unrecognised: 0,
+    nonGeographic: 0,
     ...partial,
   };
 }
@@ -135,6 +163,7 @@ export function loadResult(): ImportResult | null {
       skipped: {
         foreign: foreignNumbers(parsed.skipped?.foreign),
         unrecognised: strings(parsed.skipped?.unrecognised),
+        nonGeographic: strings(parsed.skipped?.nonGeographic),
       },
     };
   } catch {
@@ -153,7 +182,7 @@ function loadLegacyCounts(): ImportResult | null {
     summary: summaryFor(counts),
     counts,
     names: new Map(),
-    skipped: { foreign: [], unrecognised: [] },
+    skipped: { foreign: [], unrecognised: [], nonGeographic: [] },
   };
 }
 
@@ -161,6 +190,7 @@ export function clearStored(): void {
   try {
     localStorage.removeItem(KEY);
     localStorage.removeItem(LEGACY_KEY);
+    localStorage.removeItem(HOME_KEY);
   } catch {
     /* storage unavailable */
   }

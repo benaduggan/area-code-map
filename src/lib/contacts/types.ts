@@ -25,6 +25,8 @@ export interface ImportSummary {
   foreign: number;
   /** Strings that looked like phone numbers but could not be parsed, or +1 numbers with an unknown NPA. */
   unrecognised: number;
+  /** Distinct toll-free numbers: valid, but tied to no place. */
+  nonGeographic: number;
 }
 
 /**
@@ -36,7 +38,8 @@ export interface ImportResult {
   counts: Map<string, number>;
   /** Per area code: each contact name seen there and how many of that code's numbers belong to it. Sorted by name. */
   names: Map<string, NamedCount[]>;
-  /** What could not be mapped, so the user can see why. Memory only, never persisted. */
+  /** What could not be mapped, so the user can see why. Saved with the rest of
+   * the map when "Remember on this device" is on, so it holds raw numbers. */
   skipped: SkippedNumbers;
 }
 
@@ -56,4 +59,6 @@ export interface SkippedNumbers {
   foreign: ForeignNumber[];
   /** Raw strings that did not parse, or +1 numbers with an unknown area code. */
   unrecognised: string[];
+  /** Valid toll-free numbers, which belong to no geographic area code. */
+  nonGeographic: string[];
 }

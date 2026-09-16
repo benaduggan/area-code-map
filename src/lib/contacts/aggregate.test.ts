@@ -19,6 +19,7 @@ describe("aggregateContacts", () => {
     expect(result.skipped).toEqual({
       foreign: [{ e164: "+442079460958", country: "GB" }],
       unrecognised: ["12345"],
+      nonGeographic: [],
     });
     expect(result.summary).toEqual({
       source: "paste",
@@ -27,6 +28,7 @@ describe("aggregateContacts", () => {
       nanp: 4,
       foreign: 1,
       unrecognised: 1,
+      nonGeographic: 0,
     });
   });
 });
@@ -58,5 +60,26 @@ describe("mergeResults", () => {
     ]);
     expect(m.summary.nanp).toBe(3);
     expect(mergeResults([])).toBeNull();
+  });
+});
+
+describe("aggregateContacts toll-free", () => {
+  it("separates toll-free numbers from unrecognised ones", () => {
+    const r = aggregateContacts(
+      [
+        {
+          name: "Bank",
+          phones: ["+1844-864-8341", "1-800-555-0199", "(877) 555-0142", "919-555-0100"],
+        },
+        // 874 is not an assigned area code; 839 here is truncated.
+        { name: "Typos", phones: ["(874) 772-8532", "(839) 225-08"] },
+      ],
+      "vcard",
+    );
+    expect(r.skipped.nonGeographic).toEqual(["+18448648341", "+18005550199", "+18775550142"]);
+    expect(r.summary.nonGeographic).toBe(3);
+    expect(r.skipped.unrecognised).toEqual(["(874) 772-8532", "(839) 225-08"]);
+    // Toll-free never reaches the map.
+    expect([...r.counts.keys()]).toEqual(["919"]);
   });
 });

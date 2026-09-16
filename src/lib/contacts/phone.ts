@@ -20,7 +20,16 @@ export function extractPhoneCandidates(text: string): string[] {
 export type ParsedNumber =
   | { kind: "nanp"; number: NanpNumber }
   | { kind: "foreign"; e164: string; country: string | null }
+  | { kind: "nonGeographic"; e164: string; npa: string }
   | { kind: "unrecognised" };
+
+/**
+ * Toll-free codes: valid, in service, and deliberately absent from the map
+ * data, which keeps only NANPA's geographic codes (USE === "G"). They belong
+ * to no place, so they cannot be drawn — but they are not malformed either,
+ * and a contact list full of businesses has plenty of them.
+ */
+const TOLL_FREE = new Set(["800", "833", "844", "855", "866", "877", "888"]);
 
 /** Strip common vCard/URI wrappers and extension suffixes before parsing. */
 export function cleanPhoneString(raw: string): string {
@@ -33,8 +42,9 @@ export function cleanPhoneString(raw: string): string {
 
 /**
  * Parse one raw phone string with US as the default region. Returns the NPA
- * for +1 numbers whose area code is in service, flags other countries, and
- * calls everything else unrecognised.
+ * for +1 numbers whose area code is in service, separates toll-free numbers
+ * that are real but map to no place, flags other countries, and calls
+ * everything else unrecognised.
  */
 export function parseNumber(raw: string): ParsedNumber {
   const cleaned = cleanPhoneString(raw);
@@ -43,8 +53,12 @@ export function parseNumber(raw: string): ParsedNumber {
   const first = parsePhoneNumberFromString(cleaned, "US");
   if (first && first.countryCallingCode === "1") {
     const national = first.nationalNumber;
-    if (national.length === 10 && isAreaCode(national.slice(0, 3))) {
-      return { kind: "nanp", number: { e164: first.number, npa: national.slice(0, 3) } };
+    const npa = national.slice(0, 3);
+    if (national.length === 10 && isAreaCode(npa)) {
+      return { kind: "nanp", number: { e164: first.number, npa } };
+    }
+    if (national.length === 10 && TOLL_FREE.has(npa)) {
+      return { kind: "nonGeographic", e164: first.number, npa };
     }
   } else if (first && first.isPossible()) {
     // A "+" or "011" prefix made the country explicit.

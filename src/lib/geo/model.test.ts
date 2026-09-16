@@ -1,4 +1,12 @@
-import { INSETS, SHAPES, getShape, unionBounds, VIEW_HEIGHT, VIEW_WIDTH } from "./model";
+import {
+  INSETS,
+  SHAPES,
+  getShape,
+  milesBetween,
+  unionBounds,
+  VIEW_HEIGHT,
+  VIEW_WIDTH,
+} from "./model";
 import { areaCodes } from "../areacodes";
 
 describe("geo model", () => {
@@ -49,5 +57,14 @@ describe("geo model", () => {
     const b = unionBounds(["212", "718"])!;
     expect(b[1][0]).toBeGreaterThan(b[0][0]);
     expect(unionBounds(["907"])).toBeNull();
+  });
+
+  it("measures great-circle distance between shapes", () => {
+    // Raleigh to San Francisco is roughly 2,400 miles.
+    const d = milesBetween("919", "415")!;
+    expect(d).toBeGreaterThan(2200);
+    expect(d).toBeLessThan(2600);
+    expect(milesBetween("919", "919")).toBe(0);
+    expect(milesBetween("919", "000")).toBeNull();
   });
 });

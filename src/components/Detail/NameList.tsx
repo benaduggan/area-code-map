@@ -1,4 +1,5 @@
 import type { ImportResult } from "../../lib/contacts";
+import { useI18n } from "../../lib/i18n";
 
 interface Props {
   result: ImportResult;
@@ -11,17 +12,20 @@ interface Props {
  * arrived without a name (pasted text, nameless vCards).
  */
 export function NameList({ result, npa }: Props) {
+  const { t, tn } = useI18n();
   const names = result.names.get(npa) ?? [];
   const total = result.counts.get(npa) ?? 0;
   const named = names.reduce((sum, n) => sum + n.count, 0);
   const unnamed = Math.max(0, total - named);
   if (names.length === 0 && unnamed === 0) return null;
 
-  const parts = names.map((n) => (n.count > 1 ? `${n.name} (${n.count})` : n.name));
+  const parts = names.map((n) =>
+    n.count > 1 ? t("names.withCount", { name: n.name, count: n.count }) : n.name,
+  );
   let text = parts.join(", ");
   if (unnamed > 0) {
-    const tail = `${unnamed} unnamed ${unnamed === 1 ? "number" : "numbers"}`;
-    text = parts.length ? `${text}, and ${tail}` : tail;
+    const tail = tn("names.unnamed", unnamed);
+    text = parts.length ? t("names.andTail", { names: text, tail }) : tail;
   }
   return <span className="card-names">{text}</span>;
 }

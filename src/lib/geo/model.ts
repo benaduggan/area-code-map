@@ -3,7 +3,15 @@
  * main North America view and four fixed insets. Computed once at module load;
  * the map component only concatenates strings after that.
  */
-import { geoAlbers, geoConicConformal, geoMercator, geoPath, type GeoProjection } from "d3-geo";
+import {
+  geoAlbers,
+  geoCentroid,
+  geoConicConformal,
+  geoDistance,
+  geoMercator,
+  geoPath,
+  type GeoProjection,
+} from "d3-geo";
 import { feature } from "topojson-client";
 import type { GeometryCollection, Topology } from "topojson-specification";
 import type { Feature, Geometry } from "geojson";
@@ -34,6 +42,8 @@ export interface ShapeGeometry {
   /** SVG path in viewBox coordinates. */
   path: string;
   centroid: [number, number];
+  /** Spherical centroid as [lon, lat], for distances between shapes. */
+  lonLat: [number, number];
   bounds: [[number, number], [number, number]];
   /** True when the projected shape is too small to see; render a marker instead. */
   tiny: boolean;
@@ -175,6 +185,7 @@ function build(): ShapeGeometry[] {
       const d = path(f) ?? "";
       const b = path.bounds(f);
       const c = path.centroid(f);
+      const ll = geoCentroid(f);
       const w = b[1][0] - b[0][0];
       const h = b[1][1] - b[0][1];
       out.push({
@@ -182,6 +193,7 @@ function build(): ShapeGeometry[] {
         inset: inset.id,
         path: d,
         centroid: [c[0], c[1]],
+        lonLat: [ll[0], ll[1]],
         bounds: b,
         // Dense urban codes in the main view are small too, but there the user
         // can zoom; markers would just stack on top of each other in Manhattan.
@@ -237,4 +249,14 @@ export function unionBounds(ids: readonly string[]): [[number, number], [number,
         [x1, y1],
       ]
     : null;
+}
+
+const EARTH_RADIUS_MILES = 3959;
+
+/** Great-circle distance in miles between two shapes' centroids, or null if either is unknown. */
+export function milesBetween(a: string, b: string): number | null {
+  const sa = byId.get(a);
+  const sb = byId.get(b);
+  if (!sa || !sb) return null;
+  return geoDistance(sa.lonLat, sb.lonLat) * EARTH_RADIUS_MILES;
 }

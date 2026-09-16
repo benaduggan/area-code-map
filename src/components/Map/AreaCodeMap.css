@@ -103,6 +103,39 @@
   height: calc(50% - 0.2rem);
 }
 
+.shape.is-home {
+  stroke: var(--accent);
+  stroke-width: 2.2;
+}
+
+.shape.is-home.is-selected {
+  stroke: var(--fg);
+}
+
+.home-marker {
+  pointer-events: none;
+}
+
+.home-marker-disc {
+  fill: var(--accent);
+  stroke: var(--map-bg);
+  stroke-width: 1.5;
+}
+
+.home-marker-house {
+  fill: var(--on-accent);
+}
+
+.home-marker.is-theirs .home-marker-disc {
+  fill: var(--map-bg);
+  stroke: var(--home-theirs);
+  stroke-width: 1.5;
+}
+
+.home-marker.is-theirs .home-marker-house {
+  fill: var(--home-theirs);
+}
+
 .inset-frame {
   fill: var(--map-bg);
   stroke: var(--border);
@@ -143,7 +176,7 @@
 }
 
 .map-control:disabled {
-  opacity: 0.4;
+  color: var(--muted);
   cursor: default;
 }
 

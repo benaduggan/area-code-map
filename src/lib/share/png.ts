@@ -1,10 +1,10 @@
 /**
  * Render the map to a PNG in the browser: the main map at its home view
  * (whatever the current pan/zoom) plus the inset SVGs where they sit on
- * screen, with the stat cards, the legend, a title and a caption painted on
- * top. CSS classes do not carry into a serialized SVG, so computed
- * fill/stroke are copied onto each mark first. Nothing here touches the
- * network.
+ * screen, with the stat cards and the legend painted on top and a single header
+ * bar carrying the title and the site. CSS classes do not carry into a
+ * serialized SVG, so computed fill/stroke are copied onto each mark first.
+ * Nothing here touches the network.
  */
 const EXPORT_SCALE = 2;
 const FONT = "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
@@ -20,10 +20,11 @@ export interface PngColors {
 
 export interface PngOptions {
   title: string;
-  caption: string;
   cards: { value: number; label: string }[];
   legend: { color: string; label: string }[];
   colors: PngColors;
+  /** Selector for elements to leave out of the image, e.g. a home marker. */
+  exclude?: string;
 }
 
 interface Piece {
@@ -39,14 +40,13 @@ export async function mapToPngBlob(root: HTMLElement, options: PngOptions): Prom
   const width = Math.round(rootRect.width);
   const height = Math.round(rootRect.height);
   const headerHeight = 44;
-  const footerHeight = 36;
 
   const pieces: Piece[] = [];
   const urls: string[] = [];
   try {
     for (const svg of Array.from(root.querySelectorAll<SVGSVGElement>("svg"))) {
       const rect = svg.getBoundingClientRect();
-      const clone = inlineStyles(svg);
+      const clone = inlineStyles(svg, options.exclude);
       const url = URL.createObjectURL(
         new Blob([new XMLSerializer().serializeToString(clone)], {
           type: "image/svg+xml;charset=utf-8",
@@ -64,27 +64,28 @@ export async function mapToPngBlob(root: HTMLElement, options: PngOptions): Prom
 
     const canvas = document.createElement("canvas");
     canvas.width = width * EXPORT_SCALE;
-    canvas.height = (headerHeight + height + footerHeight) * EXPORT_SCALE;
+    canvas.height = (headerHeight + height) * EXPORT_SCALE;
     const ctx = canvas.getContext("2d");
     if (!ctx) throw new Error("Canvas unavailable");
     ctx.scale(EXPORT_SCALE, EXPORT_SCALE);
     const c = options.colors;
 
     ctx.fillStyle = c.page;
-    ctx.fillRect(0, 0, width, headerHeight + height + footerHeight);
+    ctx.fillRect(0, 0, width, headerHeight + height);
     ctx.fillStyle = c.background;
     ctx.fillRect(0, headerHeight, width, height);
     for (const p of pieces) ctx.drawImage(p.img, p.x, headerHeight + p.y, p.w, p.h);
 
-    // Title
-    ctx.fillStyle = c.text;
+    // Header: title on the left, where the image came from on the right. The
+    // stat cards already say what the caption used to, so there is no footer.
     ctx.textBaseline = "middle";
+    ctx.fillStyle = c.text;
     ctx.font = `700 20px ${FONT}`;
     ctx.fillText(options.title, 16, headerHeight / 2);
-    const titleWidth = ctx.measureText(options.title).width;
     ctx.fillStyle = c.muted;
-    ctx.font = `400 13px ${FONT}`;
-    ctx.fillText("See where the people you know are from.", 16 + titleWidth + 14, headerHeight / 2);
+    ctx.font = `400 12px ${FONT}`;
+    const site = location.host + location.pathname.replace(/\/$/, "");
+    ctx.fillText(site, width - 16 - ctx.measureText(site).width, headerHeight / 2);
 
     // Stat cards, top-left of the map (open ocean in this projection)
     const cardH = 48;
@@ -119,20 +120,6 @@ export async function mapToPngBlob(root: HTMLElement, options: PngOptions): Prom
       }
     }
 
-    // Caption
-    ctx.textBaseline = "middle";
-    ctx.fillStyle = c.text;
-    ctx.font = `600 14px ${FONT}`;
-    ctx.fillText(options.caption, 16, headerHeight + height + footerHeight / 2);
-    ctx.fillStyle = c.muted;
-    ctx.font = `400 12px ${FONT}`;
-    const site = location.host + location.pathname.replace(/\/$/, "");
-    ctx.fillText(
-      site,
-      width - 16 - ctx.measureText(site).width,
-      headerHeight + height + footerHeight / 2,
-    );
-
     return await new Promise<Blob>((resolve, reject) =>
       canvas.toBlob(
         (b) => (b ? resolve(b) : reject(new Error("PNG encoding failed"))),
@@ -145,7 +132,7 @@ export async function mapToPngBlob(root: HTMLElement, options: PngOptions): Prom
 }
 
 /** Clone an SVG with computed styles inlined and the main group reset to the home view. */
-function inlineStyles(svg: SVGSVGElement): SVGSVGElement {
+function inlineStyles(svg: SVGSVGElement, exclude?: string): SVGSVGElement {
   const clone = svg.cloneNode(true) as SVGSVGElement;
   const originals = svg.querySelectorAll<SVGElement>("path, circle, rect, text, line");
   const copies = clone.querySelectorAll<SVGElement>("path, circle, rect, text, line");
@@ -166,6 +153,14 @@ function inlineStyles(svg: SVGSVGElement): SVGSVGElement {
     copy.style.transition = "";
   });
   clone.querySelector(".main")?.setAttribute("transform", "");
+  if (exclude) clone.querySelectorAll(exclude).forEach((el) => el.remove());
+  // Home markers are scaled by 1/zoom on screen; the export shows the home view.
+  clone.querySelectorAll<SVGElement>(".home-marker").forEach((el) => {
+    el.setAttribute(
+      "transform",
+      (el.getAttribute("transform") ?? "").replace(/scale\([^)]*\)/, ""),
+    );
+  });
   clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
   const rect = svg.getBoundingClientRect();
   clone.setAttribute("width", String(Math.max(1, Math.round(rect.width))));
