@@ -201,7 +201,7 @@ export const en = {
   // Numbers that could not be placed
   "skipped.title": "What's not on the map",
   "skipped.intro":
-    "These They are listed so you can spot a typo or a number worth fixing in your contacts.",
+    "They are listed so you can spot a typo or a number worth fixing in your contacts.",
   "skipped.foreignHeading": "Outside North America ({count})",
   "skipped.foreignNote": "Valid numbers whose country code is not +1.",
   "skipped.unrecognisedHeading": "Unrecognised ({count})",
@@ -228,7 +228,7 @@ export const en = {
   "privacy.contacts.share":
     "A share link contains only a count per area code, and your own area code if you choose to include it, packed into the part of the URL after the {hash}.",
   "privacy.contacts.remember":
-    "“Remember on this device” writes your per-area-code counts and your own area code to your browser’s local storage only.",
+    "“Remember on this device” writes your map to your browser’s local storage only: the counts, the names, your own area code, and the numbers that could not be mapped.",
   "privacy.check.heading": "See for yourself: cut the network",
   "privacy.check.lead": "No web page can switch itself offline, but you can.",
   "privacy.check.any.label": "Any device:",

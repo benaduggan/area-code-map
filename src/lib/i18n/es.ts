@@ -116,7 +116,7 @@ export const es: Messages = {
   "import.help.outlook.link": "Abrir Personas de Outlook ↗",
   "import.help.android.label": "Android:",
   "import.help.android.text":
-    "App de Contactos → Corregir y administrar → Exportar a archivo (.vcf), y luego súbelo aquí.",
+    "App de Contactos → Organizar → Exportar a archivo, y luego súbelo aquí.",
 
   // Results
   "results.title": "Tu mapa",
@@ -181,8 +181,8 @@ export const es: Messages = {
   "share.download": "Descargar imagen",
   "share.title": "Comparte tu mapa",
   "share.explain":
-    "Un enlace para compartir lleva {only}. Sin nombres, sin números de teléfono, nada sobre quiénes son tus contactos. Quien lo abra verá tu mapa y podrá compararlo con el suyo.",
-  "share.explain.only": "solo cuántos números tienes por código de área",
+    "Un enlace para compartir lleva {only}. Sin nombres ni números de teléfono completos. Quien lo abra verá tu mapa y podrá compararlo con su propia lista de contactos.",
+  "share.explain.only": "solo las cuentas que tienes por código de área",
   "share.includeHome": "Mostrar que {npa} es mi código de área de casa",
   "share.linkHeading": "Enlace",
   "share.linkAria": "Enlace para compartir",
@@ -199,12 +199,11 @@ export const es: Messages = {
   "share.imageFailed": "No se pudo crear la imagen.",
 
   // Numbers that could not be placed
-  "skipped.title": "Números fuera del mapa",
+  "skipped.title": "Lo que no está en el mapa",
   "skipped.intro":
-    "Estos se quedan en esta pestaña como todo lo demás. Los listamos para que puedas detectar un error de tipeo o un número que valga la pena corregir en tus contactos.",
+    "Los listamos para que puedas detectar un error de tipeo o un número que valga la pena corregir en tus contactos.",
   "skipped.foreignHeading": "Fuera de Norteamérica ({count})",
-  "skipped.foreignNote":
-    "Números válidos cuyo código de país no es +1, así que no tienen código de área norteamericano.",
+  "skipped.foreignNote": "Números válidos cuyo código de país no es +1.",
   "skipped.unrecognisedHeading": "Sin reconocer ({count})",
   "skipped.unrecognisedNote":
     "Demasiado cortos, mal formados, o números +1 cuyos primeros tres dígitos no son un código de área en servicio.",
@@ -217,24 +216,21 @@ export const es: Messages = {
 
   // Privacy
   "privacy.title": "Cómo se mantiene privado",
-  "privacy.status.online":
-    "Ahora mismo estás conectado. Aun así, esta página no ha hecho ninguna petición con tus datos, ni puede hacerla: sigue leyendo.",
-  "privacy.status.offline":
-    "{offline} y todo sigue funcionando, porque nada de esto necesita la red.",
+  "privacy.status.online": "Ahora mismo estás conectado.",
+  "privacy.status.offline": "{offline}. ¡Y todo sigue funcionando!",
   "privacy.status.offline.strong": "Estás sin conexión",
   "privacy.contacts.heading": "Qué pasa con tus contactos",
   "privacy.contacts.read":
-    "El archivo o el texto que importas lo lee JavaScript que se ejecuta en esta pestaña. Los números de teléfono se reducen a su código de área y se cuentan. Los nombres se guardan junto a la cuenta para que veas quién está dónde.",
+    "Los números de teléfono se reducen a su código de área y se agrupan. Los nombres se guardan junto a la cuenta para que veas quién está dónde.",
   "privacy.contacts.noServer":
     "No hay ningún servidor detrás de este sitio. Es una carpeta de archivos estáticos servidos por GitHub Pages y construidos a partir del {link}.",
   "privacy.contacts.noServer.link": "código fuente público",
   "privacy.contacts.share":
-    "Un enlace para compartir contiene solo una cuenta por código de área, y tu propio código de área si decides incluirlo, comprimidos en la parte de la URL después del {hash}, que los navegadores nunca envían a los servidores.",
+    "Un enlace para compartir contiene solo una cuenta por código de área, y tu propio código de área si decides incluirlo, comprimidos en la parte de la URL después del {hash}.",
   "privacy.contacts.remember":
-    "«Recordar en este dispositivo» guarda tus cuentas por código de área y tu propio código de área únicamente en el almacenamiento local de tu navegador.",
+    "«Recordar en este dispositivo» guarda tu mapa únicamente en el almacenamiento local de tu navegador: las cuentas, los nombres, tu propio código de área y los números que no se pudieron ubicar.",
   "privacy.check.heading": "Compruébalo tú mismo: corta la red",
-  "privacy.check.lead":
-    "Ninguna página web puede desconectarse sola, pero tú sí puedes. Haz una de estas cosas y luego importa tus contactos. Todo sigue funcionando.",
+  "privacy.check.lead": "Ninguna página web puede desconectarse sola, pero tú sí puedes.",
   "privacy.check.any.label": "Cualquier dispositivo:",
   "privacy.check.any.text":
     "activa el modo avión. Si ya habías abierto esta página antes, está en caché y carga sin conexión.",
@@ -250,7 +246,7 @@ export const es: Messages = {
   "privacy.check.safari.responsive": "Activar el modo de diseño adaptable",
   "privacy.check.network": "Red",
   "privacy.check.offlineOption": "Sin conexión",
-  "privacy.foot": "También puedes mirar la pestaña Red mientras importas: se queda vacía.",
+  "privacy.foot": "También puedes mirar la pestaña Red: ¡se quedará vacía!",
 
   // Tooltips
   "tip.remember":

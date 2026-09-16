@@ -38,7 +38,8 @@ export interface ImportResult {
   counts: Map<string, number>;
   /** Per area code: each contact name seen there and how many of that code's numbers belong to it. Sorted by name. */
   names: Map<string, NamedCount[]>;
-  /** What could not be mapped, so the user can see why. Memory only, never persisted. */
+  /** What could not be mapped, so the user can see why. Saved with the rest of
+   * the map when "Remember on this device" is on, so it holds raw numbers. */
   skipped: SkippedNumbers;
 }
 
