@@ -1,10 +1,10 @@
 {
-  "name": "area-code-map",
+  "name": "hometowns",
   "version": "2.0.0",
   "private": true,
   "type": "module",
   "description": "A fully client-side map of the area codes in your contacts.",
-  "repository": "github:benaduggan/area-code-map",
+  "repository": "github:benaduggan/hometowns",
   "author": "Ben Duggan",
   "license": "MIT",
   "scripts": {

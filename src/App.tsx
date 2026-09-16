@@ -385,7 +385,7 @@ export function App() {
           <LanguageSelect />
           <a
             className="pill"
-            href="https://github.com/benaduggan/area-code-map"
+            href="https://github.com/benaduggan/hometowns"
             target="_blank"
             rel="noopener noreferrer"
           >

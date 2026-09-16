@@ -43,9 +43,9 @@ describe("store", () => {
   });
 
   it("reads names saved by the older string-only format", () => {
-    localStorage.setItem("area-code-map:remember", "1");
+    localStorage.setItem("hometowns:remember", "1");
     localStorage.setItem(
-      "area-code-map:import:v2",
+      "hometowns:import:v2",
       JSON.stringify({ counts: { "919": 2 }, names: { "919": ["Ann"] }, savedAt: "x" }),
     );
     expect(loadResult()!.names.get("919")).toEqual([{ name: "Ann", count: 1 }]);

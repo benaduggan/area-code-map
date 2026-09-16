@@ -123,7 +123,7 @@ export function formatDate(raw: string | null, locale: Locale): string {
   }
 }
 
-const STORAGE_KEY = "area-code-map:locale";
+const STORAGE_KEY = "hometowns:locale";
 
 function isLocale(value: string | null | undefined): value is Locale {
   return !!value && value in LOCALE_NAMES;

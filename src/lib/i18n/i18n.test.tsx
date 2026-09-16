@@ -109,7 +109,7 @@ describe("locale switching", () => {
   });
 
   it("renders the app in the stored locale", () => {
-    localStorage.setItem("area-code-map:locale", "es");
+    localStorage.setItem("hometowns:locale", "es");
     render(
       <I18nProvider>
         <Welcome

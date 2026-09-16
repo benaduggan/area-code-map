@@ -9,7 +9,7 @@
 
 }:
 let
-  name = "area-code-map";
+  name = "hometowns";
 
   envVars = {
     NIXUP = "0.0.15";
