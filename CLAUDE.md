@@ -30,7 +30,7 @@ No string that a person reads belongs in a component — that includes
 `aria-label`, `title`, `placeholder`, and error messages. In components use
 `useI18n()`; elsewhere take the translator as a parameter.
 
-When you add a key, add it to **every** dictionary (`en.ts` and `es.ts`) and
+When you add a key, add it to **every** dictionary (`en.ts`, `es.ts`, `fr.ts`) and
 then run `bun run i18n:bless`, or the drift test will fail. When you _reword_
 an existing English message, update the translations too — `typecheck` cannot
 see that one, which is exactly why the drift check exists.
