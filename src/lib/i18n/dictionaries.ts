@@ -7,10 +7,12 @@
  */
 import { en } from "./en";
 import { es } from "./es";
+import { fr } from "./fr";
 
 export const LOCALE_NAMES = {
   en: "English",
   es: "Español",
+  fr: "Français",
 } as const;
 
 export type Locale = keyof typeof LOCALE_NAMES;
@@ -23,7 +25,7 @@ export type Messages = Record<MessageKey, string>;
 type StripOther<K> = K extends `${infer Base}.other` ? Base : never;
 export type PluralKey = StripOther<MessageKey>;
 
-export const DICTIONARIES: Record<Locale, Messages> = { en, es };
+export const DICTIONARIES: Record<Locale, Messages> = { en, es, fr };
 
 /** English is the source every other locale is translated from. */
 export const SOURCE_LOCALE: Locale = "en";
