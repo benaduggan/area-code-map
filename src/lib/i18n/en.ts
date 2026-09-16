@@ -120,8 +120,7 @@ export const en = {
   "import.help.outlook.text": "People → Manage → Export contacts.",
   "import.help.outlook.link": "Open Outlook People ↗",
   "import.help.android.label": "Android:",
-  "import.help.android.text":
-    "Contacts app → Organize → Export to file, then upload it here.",
+  "import.help.android.text": "Contacts app → Organize → Export to file, then upload it here.",
 
   // Results
   "results.title": "Your map",
@@ -147,6 +146,7 @@ export const en = {
   "results.notMapped.title": "See which numbers could not be placed",
   "results.notMapped.foreign": "{count} outside North America",
   "results.notMapped.unrecognised": "{count} unrecognised",
+  "results.notMapped.tollFree": "{count} toll-free",
   "results.shareCaption": "{numbers} numbers across {codes} area codes",
 
   // Names under an area code
@@ -182,8 +182,8 @@ export const en = {
   "share.download": "Download image",
   "share.title": "Share your map",
   "share.explain":
-    "A share link carries {only}. No names, no phone numbers, nothing about who your contacts are. Anyone who opens it sees your map and can compare it with their own.",
-  "share.explain.only": "only how many numbers you have per area code",
+    "A share link carries {only}. No names or full phone numbers. Anyone who opens it sees your map and can compare it with their own contact list.",
+  "share.explain.only": "only the counts you have per area code",
   "share.includeHome": "Show that {npa} is my home area code",
   "share.linkHeading": "Link",
   "share.linkAria": "Share link",
@@ -199,41 +199,38 @@ export const en = {
   "share.imageFailed": "Could not create the image.",
 
   // Numbers that could not be placed
-  "skipped.title": "Numbers not on the map",
+  "skipped.title": "What's not on the map",
   "skipped.intro":
-    "These stay in this tab like everything else. They are listed so you can spot a typo or a number worth fixing in your contacts.",
+    "These They are listed so you can spot a typo or a number worth fixing in your contacts.",
   "skipped.foreignHeading": "Outside North America ({count})",
-  "skipped.foreignNote":
-    "Valid numbers whose country code is not +1, so they have no North American area code.",
+  "skipped.foreignNote": "Valid numbers whose country code is not +1.",
   "skipped.unrecognisedHeading": "Unrecognised ({count})",
   "skipped.unrecognisedNote":
     "Too short, malformed, or a +1 number whose first three digits are not an area code in service.",
   "skipped.country": "{country} ({count})",
   "skipped.more": "…and {count} more.",
   "skipped.unknownCountry": "Unknown country",
+  "skipped.tollFreeHeading": "Toll-free ({count})",
+  "skipped.tollFreeNote":
+    "Real numbers in service, but toll-free codes belong to a company rather than a place, so there is nowhere to put them on the map.",
 
   // Privacy
   "privacy.title": "How this stays private",
-  "privacy.status.online":
-    "You are online right now. Even so, this page has made no request with your data and cannot: read on.",
-  "privacy.status.offline":
-    "{offline} and everything still works, because nothing here needs the network.",
+  "privacy.status.online": "You are online right now.",
+  "privacy.status.offline": "{offline} and everything still works!",
   "privacy.status.offline.strong": "You are offline",
   "privacy.contacts.heading": "What happens to your contacts",
   "privacy.contacts.read":
-    "The file or text you import is read by JavaScript running in this tab. Phone numbers are reduced to their area code and counted. Names are kept alongside the count so you can see who is where.",
+    "Phone numbers are reduced to their area code and aggregated. Names are kept alongside the count so you can see who is where.",
   "privacy.contacts.noServer":
     "There is no server behind this site. It is a folder of static files served by GitHub Pages, built from {link}.",
   "privacy.contacts.noServer.link": "public source code",
-  "privacy.contacts.csp":
-    "The page ships a Content-Security-Policy that tells your browser to refuse any connection to any other origin. Even a bug could not upload your data.",
   "privacy.contacts.share":
-    "A share link contains only a count per area code, and your own area code if you choose to include it, packed into the part of the URL after the {hash}, which browsers never send to servers.",
+    "A share link contains only a count per area code, and your own area code if you choose to include it, packed into the part of the URL after the {hash}.",
   "privacy.contacts.remember":
     "“Remember on this device” writes your per-area-code counts and your own area code to your browser’s local storage only.",
   "privacy.check.heading": "See for yourself: cut the network",
-  "privacy.check.lead":
-    "No web page can switch itself offline, but you can. Do one of these, then import your contacts. Everything keeps working.",
+  "privacy.check.lead": "No web page can switch itself offline, but you can.",
   "privacy.check.any.label": "Any device:",
   "privacy.check.any.text":
     "turn on airplane mode. If you have opened this page before, it is cached and loads without a connection.",
@@ -249,7 +246,7 @@ export const en = {
   "privacy.check.safari.responsive": "Enter Responsive Design Mode",
   "privacy.check.network": "Network",
   "privacy.check.offlineOption": "Offline",
-  "privacy.foot": "You can also watch the Network tab while importing: it stays empty.",
+  "privacy.foot": "You can also watch the Network tab; it will stay empty!",
 
   // Tooltips
   "tip.remember":

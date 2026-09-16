@@ -39,10 +39,18 @@ import "./App.css";
 function resultFromCounts(counts: Map<string, number>): ImportResult {
   const nanp = [...counts.values()].reduce((a, b) => a + b, 0);
   return {
-    summary: { source: "paste", contacts: 0, numbers: nanp, nanp, foreign: 0, unrecognised: 0 },
+    summary: {
+      source: "paste",
+      contacts: 0,
+      numbers: nanp,
+      nanp,
+      foreign: 0,
+      unrecognised: 0,
+      nonGeographic: 0,
+    },
     counts,
     names: new Map(),
-    skipped: { foreign: [], unrecognised: [] },
+    skipped: { foreign: [], unrecognised: [], nonGeographic: [] },
   };
 }
 

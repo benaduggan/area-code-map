@@ -6,7 +6,6 @@ import "./ShareBar.css";
 
 interface Props {
   counts: ReadonlyMap<string, number>;
-  caption: string;
   cards: { value: number; label: string }[];
   legend: { color: string; label: string }[];
   getExportRoot: () => HTMLElement | null;
@@ -14,7 +13,7 @@ interface Props {
   home?: string | null;
 }
 
-export function ShareBar({ counts, caption, cards, legend, getExportRoot, home }: Props) {
+export function ShareBar({ counts, cards, legend, getExportRoot, home }: Props) {
   const { t, tx, n } = useI18n();
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
@@ -54,7 +53,6 @@ export function ShareBar({ counts, caption, cards, legend, getExportRoot, home }
       const v = (name: string, fallback: string) => cs.getPropertyValue(name).trim() || fallback;
       const blob = await mapToPngBlob(root, {
         title: t("app.title"),
-        caption,
         cards,
         legend,
         colors: {
@@ -154,10 +152,7 @@ export function ShareBar({ counts, caption, cards, legend, getExportRoot, home }
               {t("share.download")}
             </button>
           </div>
-          <p className="skipped-note">
-            {t("share.imageNote")}
-            {home && !includeHome && t("share.homeLeftOut")}
-          </p>
+          <p className="skipped-note">{home && !includeHome && t("share.homeLeftOut")}</p>
           {status && (
             <p className="share-status" role="status">
               {status}

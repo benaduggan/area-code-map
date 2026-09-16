@@ -38,6 +38,7 @@ describe("store", () => {
     expect(back.skipped).toEqual({
       foreign: [{ e164: "+442079460958", country: "GB" }],
       unrecognised: [],
+      nonGeographic: [],
     });
   });
 

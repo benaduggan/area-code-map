@@ -25,6 +25,8 @@ export interface ImportSummary {
   foreign: number;
   /** Strings that looked like phone numbers but could not be parsed, or +1 numbers with an unknown NPA. */
   unrecognised: number;
+  /** Distinct toll-free numbers: valid, but tied to no place. */
+  nonGeographic: number;
 }
 
 /**
@@ -56,4 +58,6 @@ export interface SkippedNumbers {
   foreign: ForeignNumber[];
   /** Raw strings that did not parse, or +1 numbers with an unknown area code. */
   unrecognised: string[];
+  /** Valid toll-free numbers, which belong to no geographic area code. */
+  nonGeographic: string[];
 }

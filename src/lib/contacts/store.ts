@@ -143,6 +143,7 @@ function summaryFor(counts: Map<string, number>, partial?: Partial<ImportResult[
     nanp,
     foreign: 0,
     unrecognised: 0,
+    nonGeographic: 0,
     ...partial,
   };
 }
@@ -162,6 +163,7 @@ export function loadResult(): ImportResult | null {
       skipped: {
         foreign: foreignNumbers(parsed.skipped?.foreign),
         unrecognised: strings(parsed.skipped?.unrecognised),
+        nonGeographic: strings(parsed.skipped?.nonGeographic),
       },
     };
   } catch {
@@ -180,7 +182,7 @@ function loadLegacyCounts(): ImportResult | null {
     summary: summaryFor(counts),
     counts,
     names: new Map(),
-    skipped: { foreign: [], unrecognised: [] },
+    skipped: { foreign: [], unrecognised: [], nonGeographic: [] },
   };
 }
 

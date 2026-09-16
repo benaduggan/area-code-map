@@ -143,6 +143,7 @@ export const es: Messages = {
   "results.notMapped.title": "Ver qué números no se pudieron ubicar",
   "results.notMapped.foreign": "{count} fuera de Norteamérica",
   "results.notMapped.unrecognised": "{count} sin reconocer",
+  "results.notMapped.tollFree": "{count} gratuitos",
   "results.shareCaption": "{numbers} números en {codes} códigos de área",
 
   // Names under an area code
@@ -210,6 +211,9 @@ export const es: Messages = {
   "skipped.country": "{country} ({count})",
   "skipped.more": "…y {count} más.",
   "skipped.unknownCountry": "País desconocido",
+  "skipped.tollFreeHeading": "Gratuitos ({count})",
+  "skipped.tollFreeNote":
+    "Son números reales y en servicio, pero los códigos gratuitos pertenecen a una empresa y no a un lugar, así que no hay dónde ponerlos en el mapa.",
 
   // Privacy
   "privacy.title": "Cómo se mantiene privado",
@@ -224,8 +228,6 @@ export const es: Messages = {
   "privacy.contacts.noServer":
     "No hay ningún servidor detrás de este sitio. Es una carpeta de archivos estáticos servidos por GitHub Pages y construidos a partir del {link}.",
   "privacy.contacts.noServer.link": "código fuente público",
-  "privacy.contacts.csp":
-    "La página incluye una Content-Security-Policy que le indica a tu navegador que rechace cualquier conexión con otro origen. Ni siquiera un error de programación podría subir tus datos.",
   "privacy.contacts.share":
     "Un enlace para compartir contiene solo una cuenta por código de área, y tu propio código de área si decides incluirlo, comprimidos en la parte de la URL después del {hash}, que los navegadores nunca envían a los servidores.",
   "privacy.contacts.remember":

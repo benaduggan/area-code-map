@@ -67,11 +67,14 @@ export function ResultsPanel({
   }, [result, comparison]);
   const { summary } = result;
   const [skippedOpen, setSkippedOpen] = useState(false);
-  const skippedCount = summary.foreign + summary.unrecognised;
+  const skippedCount = summary.foreign + summary.unrecognised + summary.nonGeographic;
   const labels = compareLabels(t);
 
   const notMappedParts = [
     summary.foreign > 0 ? t("results.notMapped.foreign", { count: n(summary.foreign) }) : null,
+    summary.nonGeographic > 0
+      ? t("results.notMapped.tollFree", { count: n(summary.nonGeographic) })
+      : null,
     summary.unrecognised > 0
       ? t("results.notMapped.unrecognised", { count: n(summary.unrecognised) })
       : null,
@@ -201,10 +204,6 @@ export function ResultsPanel({
 
       <ShareBar
         counts={result.counts}
-        caption={t("results.shareCaption", {
-          numbers: n(summary.nanp),
-          codes: n(result.counts.size),
-        })}
         cards={[
           { value: summary.nanp, label: t("results.stat.numbers") },
           { value: result.counts.size, label: t("results.stat.areaCodes") },

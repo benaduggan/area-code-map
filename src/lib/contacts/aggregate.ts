@@ -11,7 +11,11 @@ export function aggregateContacts(contacts: Contact[], source: ImportSource): Im
   const seen = new Set<string>();
   const counts = new Map<string, number>();
   const names = new Map<string, NamedCount[]>();
-  const skipped = { foreign: [] as ForeignNumber[], unrecognised: [] as string[] };
+  const skipped = {
+    foreign: [] as ForeignNumber[],
+    unrecognised: [] as string[],
+    nonGeographic: [] as string[],
+  };
 
   for (const contact of contacts) {
     for (const raw of contact.phones) {
@@ -25,6 +29,10 @@ export function aggregateContacts(contacts: Contact[], source: ImportSource): Im
       seen.add(key);
       if (parsed.kind === "foreign") {
         skipped.foreign.push({ e164: parsed.e164, country: parsed.country });
+        continue;
+      }
+      if (parsed.kind === "nonGeographic") {
+        skipped.nonGeographic.push(parsed.e164);
         continue;
       }
       const { npa } = parsed.number;
@@ -44,6 +52,7 @@ export function aggregateContacts(contacts: Contact[], source: ImportSource): Im
       nanp,
       foreign: skipped.foreign.length,
       unrecognised: skipped.unrecognised.length,
+      nonGeographic: skipped.nonGeographic.length,
     },
     counts,
     names,
@@ -64,11 +73,17 @@ export function mergeResults(results: ImportResult[]): ImportResult | null {
     nanp: 0,
     foreign: 0,
     unrecognised: 0,
+    nonGeographic: 0,
   };
-  const skipped = { foreign: [] as ForeignNumber[], unrecognised: [] as string[] };
+  const skipped = {
+    foreign: [] as ForeignNumber[],
+    unrecognised: [] as string[],
+    nonGeographic: [] as string[],
+  };
   for (const r of results) {
     skipped.foreign.push(...r.skipped.foreign);
     skipped.unrecognised.push(...r.skipped.unrecognised);
+    skipped.nonGeographic.push(...r.skipped.nonGeographic);
     for (const [npa, n] of r.counts) counts.set(npa, (counts.get(npa) ?? 0) + n);
     for (const [npa, list] of r.names) {
       for (const { name, count } of list) addName(names, npa, name, count);
@@ -78,6 +93,7 @@ export function mergeResults(results: ImportResult[]): ImportResult | null {
     summary.nanp += r.summary.nanp;
     summary.foreign += r.summary.foreign;
     summary.unrecognised += r.summary.unrecognised;
+    summary.nonGeographic += r.summary.nonGeographic;
   }
   for (const list of names.values()) sortNames(list);
   return { summary, counts, names, skipped };

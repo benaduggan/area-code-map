@@ -1,10 +1,10 @@
 /**
  * Render the map to a PNG in the browser: the main map at its home view
  * (whatever the current pan/zoom) plus the inset SVGs where they sit on
- * screen, with the stat cards, the legend, a title and a caption painted on
- * top. CSS classes do not carry into a serialized SVG, so computed
- * fill/stroke are copied onto each mark first. Nothing here touches the
- * network.
+ * screen, with the stat cards and the legend painted on top and a single header
+ * bar carrying the title and the site. CSS classes do not carry into a
+ * serialized SVG, so computed fill/stroke are copied onto each mark first.
+ * Nothing here touches the network.
  */
 const EXPORT_SCALE = 2;
 const FONT = "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
@@ -20,7 +20,6 @@ export interface PngColors {
 
 export interface PngOptions {
   title: string;
-  caption: string;
   cards: { value: number; label: string }[];
   legend: { color: string; label: string }[];
   colors: PngColors;
@@ -41,7 +40,6 @@ export async function mapToPngBlob(root: HTMLElement, options: PngOptions): Prom
   const width = Math.round(rootRect.width);
   const height = Math.round(rootRect.height);
   const headerHeight = 44;
-  const footerHeight = 36;
 
   const pieces: Piece[] = [];
   const urls: string[] = [];
@@ -66,27 +64,28 @@ export async function mapToPngBlob(root: HTMLElement, options: PngOptions): Prom
 
     const canvas = document.createElement("canvas");
     canvas.width = width * EXPORT_SCALE;
-    canvas.height = (headerHeight + height + footerHeight) * EXPORT_SCALE;
+    canvas.height = (headerHeight + height) * EXPORT_SCALE;
     const ctx = canvas.getContext("2d");
     if (!ctx) throw new Error("Canvas unavailable");
     ctx.scale(EXPORT_SCALE, EXPORT_SCALE);
     const c = options.colors;
 
     ctx.fillStyle = c.page;
-    ctx.fillRect(0, 0, width, headerHeight + height + footerHeight);
+    ctx.fillRect(0, 0, width, headerHeight + height);
     ctx.fillStyle = c.background;
     ctx.fillRect(0, headerHeight, width, height);
     for (const p of pieces) ctx.drawImage(p.img, p.x, headerHeight + p.y, p.w, p.h);
 
-    // Title
-    ctx.fillStyle = c.text;
+    // Header: title on the left, where the image came from on the right. The
+    // stat cards already say what the caption used to, so there is no footer.
     ctx.textBaseline = "middle";
+    ctx.fillStyle = c.text;
     ctx.font = `700 20px ${FONT}`;
     ctx.fillText(options.title, 16, headerHeight / 2);
-    const titleWidth = ctx.measureText(options.title).width;
     ctx.fillStyle = c.muted;
-    ctx.font = `400 13px ${FONT}`;
-    ctx.fillText("Where your people started.", 16 + titleWidth + 14, headerHeight / 2);
+    ctx.font = `400 12px ${FONT}`;
+    const site = location.host + location.pathname.replace(/\/$/, "");
+    ctx.fillText(site, width - 16 - ctx.measureText(site).width, headerHeight / 2);
 
     // Stat cards, top-left of the map (open ocean in this projection)
     const cardH = 48;
@@ -120,20 +119,6 @@ export async function mapToPngBlob(root: HTMLElement, options: PngOptions): Prom
         lx += 17 + ctx.measureText(item.label).width + 14;
       }
     }
-
-    // Caption
-    ctx.textBaseline = "middle";
-    ctx.fillStyle = c.text;
-    ctx.font = `600 14px ${FONT}`;
-    ctx.fillText(options.caption, 16, headerHeight + height + footerHeight / 2);
-    ctx.fillStyle = c.muted;
-    ctx.font = `400 12px ${FONT}`;
-    const site = location.host + location.pathname.replace(/\/$/, "");
-    ctx.fillText(
-      site,
-      width - 16 - ctx.measureText(site).width,
-      headerHeight + height + footerHeight / 2,
-    );
 
     return await new Promise<Blob>((resolve, reject) =>
       canvas.toBlob(

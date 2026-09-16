@@ -39,7 +39,6 @@ export function SkippedDialog({ open, onClose, skipped }: Props) {
             ✕
           </button>
         </div>
-        <p className="privacy-status">{t("skipped.intro")}</p>
 
         {skipped.foreign.length > 0 && (
           <>
@@ -53,6 +52,13 @@ export function SkippedDialog({ open, onClose, skipped }: Props) {
                 <List items={g.items} />
               </div>
             ))}
+          </>
+        )}
+        {skipped.nonGeographic.length > 0 && (
+          <>
+            <h3>{t("skipped.tollFreeHeading", { count: n(skipped.nonGeographic.length) })}</h3>
+            <p className="skipped-note">{t("skipped.tollFreeNote")}</p>
+            <List items={skipped.nonGeographic} />
           </>
         )}
         {skipped.unrecognised.length > 0 && (

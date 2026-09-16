@@ -41,14 +41,15 @@ export function PrivacyDialog({ open, onClose, online }: Props) {
             ✕
           </button>
         </div>
-
-        <p className="privacy-status">
-          {online
-            ? t("privacy.status.online")
-            : tx("privacy.status.offline", {
-                offline: <strong>{t("privacy.status.offline.strong")}</strong>,
-              })}
-        </p>
+        {!online && (
+          <p className="privacy-status">
+            {online
+              ? t("privacy.status.online")
+              : tx("privacy.status.offline", {
+                  offline: <strong>{t("privacy.status.offline.strong")}</strong>,
+                })}
+          </p>
+        )}
 
         <h3>{t("privacy.contacts.heading")}</h3>
         <ul>
@@ -66,7 +67,6 @@ export function PrivacyDialog({ open, onClose, online }: Props) {
               ),
             })}
           </li>
-          <li>{t("privacy.contacts.csp")}</li>
           <li>{tx("privacy.contacts.share", { hash: <code>#</code> })}</li>
           <li>{t("privacy.contacts.remember")}</li>
         </ul>
